@@ -4,12 +4,17 @@
   "description": "EBSI Ledger Onboarding Service",
   "scripts": {
     "dev": "nodemon -L --nolazy app/server.js",
-   "test": "cross-env NODE_ENV=test jest --testTimeout=10000",
+    "test": "cross-env NODE_ENV=test jest --testTimeout=10000",
     "start": "node app/server.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@cef-ebsi/ebsi-did-resolver": "^4.0.3",
+    "@cef-ebsi/key-did-resolver": "^2.0.4",
+    "@cef-ebsi/verifiable-credential": "^6.1.0",
+    "@cef-ebsi/verifiable-presentation": "^7.1.0",
+    "did-jwt": "^8.0.4",
     "express": "^4.21.1",
     "nodemon": "^3.1.7"
   },

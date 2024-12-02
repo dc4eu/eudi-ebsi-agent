@@ -3,11 +3,13 @@
   "version": "1.0.0",
   "description": "EBSI Ledger Onboarding Service",
   "scripts": {
+    "dev": "nodemon -L --nolazy app/server.js",
     "start": "node app/server.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.21.1"
+    "express": "^4.21.1",
+    "nodemon": "^3.1.7"
   }
 }

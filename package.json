@@ -1,0 +1,13 @@
+{
+  "name": "ebsi-onboarder",
+  "version": "1.0.0",
+  "description": "EBSI Ledger Onboarding Service",
+  "scripts": {
+    "start": "node app/server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.1"
+  }
+}

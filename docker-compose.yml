@@ -5,9 +5,8 @@ services:
       context: .
       dockerfile: Dockerfile.dev
     expose:
-      - 7000
-    environment:
-      DEBUG: 1
-      PORT: 7000
+      - 3000
+    ports:
+      - 3000:3000
     volumes:
-      - ./.:/home/dev/app
+      - ./app:/usr/home/app

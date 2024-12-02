@@ -3,9 +3,15 @@
 ## Spin up service
 
 ```bash
-docker compose up
+docker compose up [--build]
 ```
 
+Visit localhost:3000
+
 ## Endpoints
+
+```
+GET /
+```
 
 ## Development

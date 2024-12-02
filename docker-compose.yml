@@ -4,6 +4,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
+    environment:
+      - PORT=3000
     expose:
       - 3000
     ports:

@@ -4,6 +4,7 @@
   "description": "EBSI Ledger Onboarding Service",
   "scripts": {
     "dev": "nodemon -L --nolazy app/server.js",
+   "test": "cross-env NODE_ENV=test jest --testTimeout=10000",
     "start": "node app/server.js"
   },
   "author": "",
@@ -11,6 +12,12 @@
   "dependencies": {
     "express": "^4.21.1",
     "nodemon": "^3.1.7"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coveragePathIgnorePatterns": [
+      "/node_modules/"
+    ]
   },
   "devDependencies": {
     "cross-env": "^7.0.3",

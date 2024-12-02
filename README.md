@@ -14,11 +14,9 @@ Visit [`localhost:3000`](http://localhost:3000)
 GET /info
 ```
 
-## Development
+## Reference API Client
 
-### API Client
-
-#### Setup
+### Setup
 
 ```shell
 python -m venv .env
@@ -29,10 +27,24 @@ source .env/bin/activate
 pip install -r requirements-client.txt
 ```
 
-#### Usage
+### Usage
 
 Assuming that the virtual environment is activated:
 
 ```shell
 python api-client.py --help
+```
+
+### Examples
+
+```shell
+python api-client.py fetch info
+```
+
+## Development
+
+### Tests
+
+```shell
+npm run dev
 ```

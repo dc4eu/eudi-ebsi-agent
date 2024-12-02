@@ -2,6 +2,10 @@
 
 ## Spin up service
 
+```bash
+docker compose up
+```
+
 ## Endpoints
 
 ## Development

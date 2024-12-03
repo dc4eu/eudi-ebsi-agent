@@ -1,5 +1,5 @@
-const express = require("express");
-const path = require("path");
+import express from "express";
+import path from "path";
 
 const app = express();
 
@@ -23,4 +23,4 @@ app.listen(port, hostname, () => {
   console.log(`Server listening at port: ${port}`)
 })
 
-module.exports = app;
+export default app;

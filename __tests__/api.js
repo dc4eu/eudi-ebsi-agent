@@ -1,5 +1,6 @@
-const server = require("../app/server");
-const supertest = require("supertest");
+import server from "../app/server";
+import supertest from "supertest";
+
 const client = supertest(server)
 
 describe("Info endpoint", () => {

@@ -10,8 +10,20 @@ Visit [`localhost:3000`](http://localhost:3000)
 
 ## Endpoints
 
+### Info endpoint
+
 ```
 GET /info
+```
+
+### DID resolution
+
+```
+GET /resolve
+
+{
+  "did": <DID>
+}
 ```
 
 ## Reference API Client
@@ -39,6 +51,10 @@ python api-client.py --help
 
 ```shell
 python api-client.py fetch info
+```
+
+```shell
+python api-client.py resolve did:ebsi:zvHWX359A3CvfJnCYaAiAde
 ```
 
 ## Development

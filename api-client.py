@@ -39,6 +39,16 @@ def main_fetch():
         flush_json(data)
 
 
+def main_resolve():
+    did = cli_args.did
+    endpoint = "resolve/"
+    resp = requests.get(create_url(service_address, endpoint), json={
+        "did": did
+    })
+    data = resp.json()
+    flush_json(data)
+
+
 def main_submit():
     subcommand = cli_args.fetch_subcommand
 
@@ -73,7 +83,7 @@ def main():
     commands = parser.add_subparsers(dest="command")
 
     ## fetch
-    fetch = commands.add_parser("fetch", help="GET requests")
+    fetch = commands.add_parser("fetch", help="Fetch resource actions")
     fetch.add_argument("--suppress", action="store_true", default=False,
                         help="Do not display JSON response")
     fetch_subcommand = fetch.add_subparsers(dest="fetch_subcommand")
@@ -81,10 +91,15 @@ def main():
                         help="Fetch service info")
 
     ## submit
-    submit = commands.add_parser("submit", help="POST requests")
+    submit = commands.add_parser("submit", help="Submit payload actions")
     submit_subcommand = submit.add_subparsers(dest="submit_subcommand")
     submit_did = submit_subcommand.add_parser("did",
                         help="Submit DID to onboard")
+
+    ## resolve
+    resolve = commands.add_parser("resolve", help="Resolve DID")
+    resolve.add_argument("did", type=str, metavar="<DID>",
+                         help="DID to resolve")
 
     global cli_args
     global service_address
@@ -96,6 +111,8 @@ def main():
             main_fetch()
         case "submit":
             main_submit()
+        case "resolve":
+            main_resolve()
 
 
 

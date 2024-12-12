@@ -10,10 +10,34 @@ Visit [`localhost:3000`](http://localhost:3000)
 
 ## Endpoints
 
-### Info endpoint
+### Service info
 
 ```
 GET /info
+```
+
+### Identity creation
+
+```
+GET /create-did
+
+{
+  "jwk": <JWK>,
+  "crypto": <SYSTEM>,
+  "method": <METHOD>,
+}
+```
+
+```
+{
+  "did": <DID>,
+  "privateJwk": {
+    ...
+  },
+  "publicJwk": {
+    ...
+  }
+}
 ```
 
 ### DID resolution
@@ -62,5 +86,5 @@ python api-client.py resolve did:ebsi:zvHWX359A3CvfJnCYaAiAde
 ### Tests
 
 ```shell
-npm run dev
+npm run test[:reload]
 ```

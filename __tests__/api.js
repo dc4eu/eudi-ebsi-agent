@@ -3,7 +3,7 @@ import supertest from "supertest";
 
 const client = supertest(server)
 
-describe("Info endpoint", () => {
+describe("Service info endpoint", () => {
   it("GET /info: Should display service info in JSON format", async () => {
     const res = await client.get("/info");
     expect(res.status).toEqual(200);
@@ -15,7 +15,97 @@ describe("Info endpoint", () => {
 });
 
 
-describe("Resolution endpoint", () => {
+describe("DID creation endpoint - success", () => {
+  it.each([
+    ["rsa", "key"],
+    ["rsa", "ebsi"],
+    ["ES256K", "key"],
+    ["ES256K", "ebsi"],
+    ["secp256k1", "key"],
+    ["secp256k1", "ebsi"],
+  ])(
+  "GET /create-did: create both JWK and DID - over: %s, method: %s", async (crypto, method) => {
+    const res = await client
+      .post("/create-did")
+      .send({
+        crypto, method
+      });
+    expect(res.status).toEqual(200);
+    const { did, privateJwk, publicJwk } = res.body;
+    expect(did.startsWith(`did:${method}`)).toEqual(true);
+    expect(privateJwk.kty.toLowerCase()).toEqual(crypto == "rsa" ? crypto : "ec");
+    expect(publicJwk.kty.toLowerCase()).toEqual(crypto == "rsa" ? crypto : "ec");
+  });
+  it.each(["key", "ebsi"])(
+    "GET /create-did: create DID from submitted JWK - method: %s", async (method) => {
+      const jwk = {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "ngy44T1vxAT6Di4nr-UaM9K3Tlnz9pkoksDokKFkmNc",
+        "y": "QCRfOKlSM31GTkb4JHx3nXB4G_jSPMsbdjzlkT_UpPc",
+      }
+      const res = await client
+        .post("/create-did")
+        .send({
+          jwk, method
+        });
+      expect(res.status).toEqual(200);
+      const { did, privateJwk, publicJwk } = res.body;
+      expect(did.startsWith(`did:${method}`)).toEqual(true);
+      expect(privateJwk).toEqual(undefined);
+      expect(publicJwk).toEqual(jwk);
+  });
+});
+
+describe("DID creation endpoint - errors", () => {
+  it("GET /create-did: 400 - No method specified", async () => {
+    const res = await client
+      .post("/create-did")
+        .send({});
+    expect(res.status).toEqual(400);
+    expect(res.body).toEqual({
+      "error": "Malformed request: No method specified"
+    });
+  });
+  it("GET /create-did: 400 - No crypto specified", async () => {
+    const res = await client
+      .post("/create-did")
+        .send({
+          "method": "ebsi"
+        });
+    expect(res.status).toEqual(400);
+    expect(res.body).toEqual({
+      "error": "Malformed request: No crypto specified"
+    });
+  });
+  it("GET /create-did: 400 - Unsupported method", async () => {
+    const res = await client
+      .post("/create-did")
+        .send({
+          "method": "foo",
+          "crypto": "rsa",
+        });
+    expect(res.status).toEqual(400);
+    expect(res.body).toEqual({
+      "error": "Unsupported method: foo"
+    });
+  });
+  it("GET /create-did: 400 - Unsupported crypto", async () => {
+    const res = await client
+      .post("/create-did")
+        .send({
+          "method": "foo",
+          "crypto": "rsa",
+        });
+    expect(res.status).toEqual(400);
+    expect(res.body).toEqual({
+      "error": "Unsupported method: foo"
+    });
+  });
+});
+
+
+describe("DID resolution endpoint", () => {
   it("GET /resolve: Malformed request", async () => {
     const res = await client.get("/resolve");
     expect(res.status).toEqual(400);

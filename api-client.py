@@ -32,7 +32,6 @@ def main_fetch():
     match subcommand:
         case "info":
             endpoint = "info/"
-
     resp = requests.get(create_url(service_address, endpoint))
     data = resp.json()
     if not cli_args.suppress:
@@ -49,12 +48,21 @@ def main_resolve():
     flush_json(data)
 
 
-def main_submit():
-    subcommand = cli_args.fetch_subcommand
+def main_create():
+    subcommand = cli_args.create_subcommand
 
-    match cli_args.submit_subcommand:
+    match subcommand:
         case "did":
-            raise NotImplemented
+            method = cli_args.method
+            crypto = cli_args.crypto
+            endpoint = "create-did/"
+            resp = requests.get(create_url(service_address, endpoint), json={
+                "crypto": crypto,
+                "method": method,
+            })
+            data = resp.json()
+            flush_json(data)
+
 
 def main():
     prog = sys.argv[0]
@@ -75,7 +83,7 @@ def main():
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--verbose", action="store_true", default=False,
-                        help="Display payload for POST requests")
+                        help="Display submitted payloads")
     group.add_argument("--quiet", action="store_true", default=False,
                         help="Display no info at all. Overrides verbose")
 
@@ -87,17 +95,29 @@ def main():
     fetch.add_argument("--suppress", action="store_true", default=False,
                         help="Do not display JSON response")
     fetch_subcommand = fetch.add_subparsers(dest="fetch_subcommand")
-    fetch_crypto = fetch_subcommand.add_parser("info",
+
+    ## fetch info
+    fetch_info = fetch_subcommand.add_parser("info",
                         help="Fetch service info")
 
-    ## submit
-    submit = commands.add_parser("submit", help="Submit payload actions")
-    submit_subcommand = submit.add_subparsers(dest="submit_subcommand")
-    submit_did = submit_subcommand.add_parser("did",
-                        help="Submit DID to onboard")
+    ## create
+    create = commands.add_parser("create", help="Creation actions")
+    create_subcommand = create.add_subparsers(dest="create_subcommand")
+
+    ### create did
+    create_did = create_subcommand.add_parser("did",
+                        help="Create DID")
+    create_did.add_argument("--crypto", type=str, metavar="<SYSTEM>",
+                        choices=["rsa", "RSA", "ES256K", "secp256k1"],
+                        default="ES256K", help="Underlying cryptosystem")
+    create_did.add_argument("--method", type=str, metavar="<METHOD>",
+                        choices=["key", "ebsi"],
+                        default="ebsi", help="DID method")
 
     ## resolve
     resolve = commands.add_parser("resolve", help="Resolve DID")
+
+    ### resolve did
     resolve.add_argument("did", type=str, metavar="<DID>",
                          help="DID to resolve")
 
@@ -109,8 +129,8 @@ def main():
     match cli_args.command:
         case "fetch":
             main_fetch()
-        case "submit":
-            main_submit()
+        case "create":
+            main_create()
         case "resolve":
             main_resolve()
 

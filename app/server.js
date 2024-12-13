@@ -71,7 +71,7 @@ app.get("/info", async (req, res) => {
 
 
 
-app.post("/create-did", async (req, res) => {
+app.get("/create-did", async (req, res) => {
   const body = req.body;
   if (!body) {
     return res.status(400).json({ error: "Malformed request: No body" });
@@ -112,12 +112,15 @@ app.post("/create-did", async (req, res) => {
 
 app.get("/resolve-did", async (req, res) => {
   const body = req.body;
-
-  if (!(body && body.did)) {
-    return res.status(400).json({ error: "Malformed request" });
+  if (!body) {
+    return res.status(400).json({ error: "Malformed request: No body" });
   }
-  const result = await didResolver.resolve(body.did);
+  const { did } = body;
+  if (!did) {
+    return res.status(400).json({ error: "Malformed request: No did specified" });
+  }
 
+  const result = await didResolver.resolve(body.did);
   if (!result.didDocument) {
     const error = result.didResolutionMetadata.error;
     switch (error) {

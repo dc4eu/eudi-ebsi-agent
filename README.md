@@ -16,7 +16,7 @@ Visit [`localhost:3000`](http://localhost:3000)
 GET /info
 ```
 
-### Identity creation
+### DID creation
 
 ```
 GET /create-did
@@ -78,7 +78,11 @@ python api-client.py fetch info
 ```
 
 ```shell
-python api-client.py resolve did:ebsi:zvHWX359A3CvfJnCYaAiAde
+python api-client.py create did --crypto secp256k1 --method ebsi
+```
+
+```shell
+python api-client.py resolve did:ebsi:ziDnioxYYLW1a3qUbqTFz4W
 ```
 
 ## Development

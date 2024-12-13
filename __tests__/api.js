@@ -26,7 +26,7 @@ describe("DID creation endpoint - success", () => {
   ])(
   "GET /create-did: 200 - create both JWK and DID - over: %s, method: %s", async (crypto, method) => {
     const res = await client
-      .post("/create-did")
+      .get("/create-did")
       .send({
         crypto, method
       });
@@ -45,7 +45,7 @@ describe("DID creation endpoint - success", () => {
         "y": "QCRfOKlSM31GTkb4JHx3nXB4G_jSPMsbdjzlkT_UpPc",
       }
       const res = await client
-        .post("/create-did")
+        .get("/create-did")
         .send({
           jwk, method
         });
@@ -60,7 +60,7 @@ describe("DID creation endpoint - success", () => {
 describe("DID creation endpoint - errors", () => {
   it("GET /create-did: 400 - No method specified", async () => {
     const res = await client
-      .post("/create-did")
+      .get("/create-did")
         .send({});
     expect(res.status).toEqual(400);
     expect(res.body).toEqual({
@@ -69,7 +69,7 @@ describe("DID creation endpoint - errors", () => {
   });
   it("GET /create-did: 400 - No crypto specified", async () => {
     const res = await client
-      .post("/create-did")
+      .get("/create-did")
         .send({
           "method": "ebsi"
         });
@@ -80,7 +80,7 @@ describe("DID creation endpoint - errors", () => {
   });
   it("GET /create-did: 400 - Unsupported method", async () => {
     const res = await client
-      .post("/create-did")
+      .get("/create-did")
         .send({
           "method": "foo",
           "crypto": "rsa",
@@ -92,7 +92,7 @@ describe("DID creation endpoint - errors", () => {
   });
   it("GET /create-did: 400 - Unsupported crypto", async () => {
     const res = await client
-      .post("/create-did")
+      .get("/create-did")
         .send({
           "method": "foo",
           "crypto": "rsa",
@@ -171,12 +171,12 @@ describe("DID resolution endpoint - success", () => {
 
 
 describe("DID resolution endpoint - errors", () => {
-  it("GET /resolve-did: 400 - Malformed request", async () => {
+  it("GET /resolve-did: 400 - No did specified", async () => {
     const res = await client.get("/resolve-did");
     expect(res.status).toEqual(400);
     expect(res.headers["content-type"]).toMatch("application\/json");
     expect(res.body).toEqual({
-      "error": "Malformed request"
+      "error": "Malformed request: No did specified"
     });
   });
   it("GET /resolve-did: 400 - Invalid DID", async () => {

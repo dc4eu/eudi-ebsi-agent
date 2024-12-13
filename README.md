@@ -43,7 +43,7 @@ GET /create-did
 ### DID resolution
 
 ```
-GET /resolve
+GET /resolve-did
 
 {
   "did": <DID>

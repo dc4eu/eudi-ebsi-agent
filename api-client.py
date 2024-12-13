@@ -41,7 +41,7 @@ def main_fetch():
 
 def main_resolve():
     did = cli_args.did
-    endpoint = "resolve/"
+    endpoint = "resolve-did/"
     resp = requests.get(create_url(service_address, endpoint), json={
         "did": did
     })

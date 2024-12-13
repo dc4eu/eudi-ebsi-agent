@@ -110,13 +110,12 @@ app.post("/create-did", async (req, res) => {
 });
 
 
-app.get("/resolve", async (req, res) => {
+app.get("/resolve-did", async (req, res) => {
   const body = req.body;
 
   if (!(body && body.did)) {
     return res.status(400).json({ error: "Malformed request" });
   }
-
   const result = await didResolver.resolve(body.did);
 
   if (!result.didDocument) {

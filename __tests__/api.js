@@ -24,7 +24,7 @@ describe("DID creation endpoint - success", () => {
     ["secp256k1", "key"],
     ["secp256k1", "ebsi"],
   ])(
-  "GET /create-did: create both JWK and DID - over: %s, method: %s", async (crypto, method) => {
+  "GET /create-did: 200 - create both JWK and DID - over: %s, method: %s", async (crypto, method) => {
     const res = await client
       .post("/create-did")
       .send({
@@ -37,7 +37,7 @@ describe("DID creation endpoint - success", () => {
     expect(publicJwk.kty.toLowerCase()).toEqual(crypto == "rsa" ? crypto : "ec");
   });
   it.each(["key", "ebsi"])(
-    "GET /create-did: create DID from submitted JWK - method: %s", async (method) => {
+    "GET /create-did: 200 - create DID from submitted JWK - method: %s", async (method) => {
       const jwk = {
         "kty": "EC",
         "crv": "P-256",
@@ -105,47 +105,14 @@ describe("DID creation endpoint - errors", () => {
 });
 
 
-describe("DID resolution endpoint", () => {
-  it("GET /resolve: Malformed request", async () => {
-    const res = await client.get("/resolve");
-    expect(res.status).toEqual(400);
-    expect(res.headers["content-type"]).toMatch("application\/json");
-    expect(res.body).toEqual({
-      "error": "Malformed request"
-    });
-  });
-  it("GET /resolve: Invalid DID", async () => {
+describe("DID resolution endpoint - success", () => {
+  it("GET /resolve-did: 200 - Resolve onboarded DID", async () => {
+    const did  = "did:ebsi:ziDnioxYYLW1a3qUbqTFz4W";
     const res = await client
-      .get("/resolve")
+      .get("/resolve-did")
       .set('Content-Type', 'application/json')
       .send({
-        did: "did:ebsi:666"
-      });
-    expect(res.status).toEqual(400);
-    expect(res.headers["content-type"]).toMatch("application\/json");
-    expect(res.body).toEqual({
-      "error": "Invalid DID"
-    });
-  });
-  it("GET /resolve: DID not found", async () => {
-    const res = await client
-      .get("/resolve")
-      .set('Content-Type', 'application/json')
-      .send({
-        did: "did:ebsi:zvHWX359A3CvfJnCYaAiAde"
-      });
-    expect(res.status).toEqual(400);
-    expect(res.headers["content-type"]).toMatch("application\/json");
-    expect(res.body).toEqual({
-      "error": "DID not found"
-    });
-  });
-  it("GET /resolve: Success", async () => {
-    const res = await client
-      .get("/resolve")
-      .set('Content-Type', 'application/json')
-      .send({
-        did: "did:ebsi:ziDnioxYYLW1a3qUbqTFz4W"
+        did
       });
     expect(res.status).toEqual(200);
     expect(res.headers["content-type"]).toMatch("application\/json");
@@ -198,6 +165,44 @@ describe("DID resolution endpoint", () => {
       "didResolutionMetadata": {
           "contentType": "application/did+ld+json"
       }
+    });
+  });
+});
+
+
+describe("DID resolution endpoint - errors", () => {
+  it("GET /resolve-did: 400 - Malformed request", async () => {
+    const res = await client.get("/resolve-did");
+    expect(res.status).toEqual(400);
+    expect(res.headers["content-type"]).toMatch("application\/json");
+    expect(res.body).toEqual({
+      "error": "Malformed request"
+    });
+  });
+  it("GET /resolve-did: 400 - Invalid DID", async () => {
+    const res = await client
+      .get("/resolve-did")
+      .set('Content-Type', 'application/json')
+      .send({
+        did: "did:ebsi:666"
+      });
+    expect(res.status).toEqual(400);
+    expect(res.headers["content-type"]).toMatch("application\/json");
+    expect(res.body).toEqual({
+      "error": "Invalid DID"
+    });
+  });
+  it("GET /resolve-did: 400 - DID not found", async () => {
+    const res = await client
+      .get("/resolve-did")
+      .set('Content-Type', 'application/json')
+      .send({
+        did: "did:ebsi:zvHWX359A3CvfJnCYaAiAde"
+      });
+    expect(res.status).toEqual(400);
+    expect(res.headers["content-type"]).toMatch("application\/json");
+    expect(res.body).toEqual({
+      "error": "DID not found"
     });
   });
 });

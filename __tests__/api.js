@@ -1,5 +1,7 @@
 import server from "../app/server";
 import supertest from "supertest";
+import { decodeJWT } from "did-jwt";
+import { importJWK, jwtVerify } from "jose";
 
 const client = supertest(server)
 
@@ -224,3 +226,51 @@ describe("DID resolution endpoint - errors", () => {
     });
   });
 });
+
+
+describe("VC issuance endpoint - success", () => {
+  it.each(["rsa", "RSA", "secp256k1", "ES256K"])(
+  "GET /issue-credential: 200 - issue VC - over: %s", async (crypto) => {
+    const issuer = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
+    const subject = "did:ebsi:z25a23eWUxQQzmAgnD9srpMM";
+    // TODO: Parametrize per key type
+    const jwk = {
+      "kty": "EC",
+      "x": "yoVl3PUmiPmwghU1RAtDs4AUbxTAjzjz4EXFuXK2xmE",
+      "y": "n2LoKvFkSuUoS76afCxfPrkWr4kofVpBxZjSC64emL4",
+      "crv": "secp256k1",
+      "d": "yS9Cchyy-s7NVcXqLYKT9dFFPlrWK6O-0gsg5QY29Zg"
+    };
+    const kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc";
+    const res = await client
+      .get("/issue-credential")
+      .set('Content-Type', 'application/json')
+      .send({
+        issuer,
+        subject,
+        kid,
+        jwk,
+      });
+    expect(res.status).toEqual(200);
+    const { vcJwt } = res.body;
+
+    // Verify embedded signature and parse content
+    const publicKey = await importJWK(jwk, "ES256K");
+    const { payload, protectedHeader: header } = await jwtVerify(vcJwt, publicKey);
+
+    // Check header content
+    expect(header.alg).toEqual("ES256K");  // TODO: Resolve per jwk type
+    expect(header.kid).toEqual(kid);
+
+    // Check vc content
+    const { vc } = payload;
+    expect(vc.issuer).toEqual(issuer);
+    expect(vc.issuanceDate).toEqual("2021-11-01T00:00:00Z");   // TODO
+    expect(vc.validFrom).toEqual("2021-11-01T00:00:00Z");   // TODO
+    expect(vc.validUntil).toEqual("2050-11-01T00:00:00Z");   // TODO
+    expect(vc.expirationDate).toEqual("2031-11-30T00:00:00Z");   // TODO
+    expect(vc.issued).toEqual("2021-10-30T00:00:00Z");   // TODO
+    expect(vc.credentialSubject.id).toEqual(subject);
+  });
+});
+

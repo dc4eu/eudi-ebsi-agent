@@ -80,6 +80,38 @@ def main_create():
                     json.dump(data, f, indent=4)
 
 
+def main_issue():
+    subcommand = cli_args.issue_subcommand
+
+    match subcommand:
+        case "credential":
+            # TODO
+            # issuer = cli_args.issuer
+            issuer = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg"
+            # TODO
+            # subject = cli_args.subject
+            subject = "did:ebsi:z25a23eWUxQQzmAgnD9srpMM"
+            # TODO
+            jwk = {
+                "kty": "EC",
+                "x": "yoVl3PUmiPmwghU1RAtDs4AUbxTAjzjz4EXFuXK2xmE",
+                "y": "n2LoKvFkSuUoS76afCxfPrkWr4kofVpBxZjSC64emL4",
+                "crv": "secp256k1",
+                "d": "yS9Cchyy-s7NVcXqLYKT9dFFPlrWK6O-0gsg5QY29Zg"
+            }
+            # TODO
+            kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc"
+            endpoint = "issue-credential/"
+            resp = requests.get(create_url(service_address, endpoint), json={
+                "issuer": issuer,
+                "subject": subject,
+                "jwk": jwk,
+                "kid": kid,
+            })
+            data = resp.json()
+            flush_json(data)
+
+
 def main():
     prog = sys.argv[0]
     usage = "python %s [OPTIONS]" % prog
@@ -150,6 +182,18 @@ def main():
     resolve.add_argument("did", type=str, metavar="<DID>",
                          help="DID to resolve")
 
+    ## issue
+    issue = commands.add_parser("issue", help="Issuance actions")
+    issue_subcommand = issue.add_subparsers(dest="issue_subcommand")
+
+    ### issue did
+    issue_did = issue_subcommand.add_parser("credential",
+                        help="Issue VC credential")
+    issue_did.add_argument("--issuer", type=str, metavar="<DID>",
+                           required=True,
+                           help="Issuer DID")
+    # TODO: More VC issuance options here
+
     global cli_args
     global service_address
     global storage
@@ -164,6 +208,8 @@ def main():
             main_create()
         case "resolve":
             main_resolve()
+        case "issue":
+            main_issue()
 
 
 

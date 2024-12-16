@@ -16,6 +16,27 @@ Visit [`localhost:3000`](http://localhost:3000)
 GET /info
 ```
 
+### Key creation
+
+```
+GET /create-key
+
+{
+  "crypto": <SYSTEM>,
+}
+```
+
+```
+{
+  "privateJwk": {
+    ...
+  },
+  "publicJwk": {
+    ...
+  }
+}
+```
+
 ### DID creation
 
 ```
@@ -75,6 +96,10 @@ python api-client.py --help
 
 ```shell
 python api-client.py fetch info
+```
+
+```shell
+python api-client.py create key --crypto secp256k1
 ```
 
 ```shell

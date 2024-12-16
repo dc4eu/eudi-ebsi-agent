@@ -53,6 +53,17 @@ def main_create():
     subcommand = cli_args.create_subcommand
 
     match subcommand:
+        case "key":
+            crypto = cli_args.crypto
+            endpoint = "create-key/"
+            resp = requests.get(create_url(service_address, endpoint), json={
+                "crypto": crypto,
+            })
+            data = resp.json()
+            flush_json(data)
+            if cli_args.out:
+                with open(os.path.join(storage, cli_args.out), "w") as f:
+                    json.dump(data, f, indent=4)
         case "did":
             method = cli_args.method
             crypto = cli_args.crypto
@@ -107,6 +118,15 @@ def main():
     ## create
     create = commands.add_parser("create", help="Creation actions")
     create_subcommand = create.add_subparsers(dest="create_subcommand")
+
+    ### create key
+    create_key = create_subcommand.add_parser("key",
+                        help="Create key")
+    create_key.add_argument("--crypto", type=str, metavar="<SYSTEM>",
+                        choices=["rsa", "RSA", "ES256K", "secp256k1"],
+                        default="ES256K", help="Underlying cryptosystem")
+    create_key.add_argument("--out", type=str, metavar="<FILE>",
+                        help="Save key inside .api-client-storage")
 
     ### create did
     create_did = create_subcommand.add_parser("did",

@@ -70,6 +70,28 @@ app.get("/info", async (req, res) => {
 });
 
 
+app.get("/create-key", async (req, res) => {
+  const body = req.body;
+  if (!body) {
+    return res.status(400).json({ error: "Malformed request: No body" });
+  }
+  const { crypto } = req.body;
+  if (!crypto) {
+    return res.status(400).json({ error: "Malformed request: No crypto specified" });
+  }
+
+  let keypair;
+  try {
+    keypair = await generateJwkPair(crypto);
+  } catch(err) {
+    return res.status(400).json({ error: err.message });
+  }
+  const { privateJwk, publicJwk } = keypair;
+
+  res.json({ privateJwk, publicJwk });
+});
+
+
 
 app.get("/create-did", async (req, res) => {
   const body = req.body;

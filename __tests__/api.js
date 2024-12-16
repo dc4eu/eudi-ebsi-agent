@@ -15,6 +15,46 @@ describe("Service info endpoint", () => {
 });
 
 
+describe("Key creation endpoint - success", () => {
+  it.each(["rsa", "ES256K", "secp256k1"])(
+  "GET /create-key: 200 - create JWK - over: %s", async (crypto) => {
+    const res = await client
+      .get("/create-key")
+      .send({
+        crypto
+      });
+    expect(res.status).toEqual(200);
+    const { privateJwk, publicJwk } = res.body;
+    expect(privateJwk.kty.toLowerCase()).toEqual(crypto == "rsa" ? crypto : "ec");
+    expect(publicJwk.kty.toLowerCase()).toEqual(crypto == "rsa" ? crypto : "ec");
+  });
+});
+
+describe("Key creation endpoint - errors", () => {
+  it("GET /create-key: 400 - No crypto specified", async () => {
+    const res = await client
+      .get("/create-key")
+        .send({
+        });
+    expect(res.status).toEqual(400);
+    expect(res.body).toEqual({
+      "error": "Malformed request: No crypto specified"
+    });
+  });
+  it("GET /create-key: 400 - Unsupported crypto", async () => {
+    const res = await client
+      .get("/create-key")
+        .send({
+          "crypto": "foo",
+        });
+    expect(res.status).toEqual(400);
+    expect(res.body).toEqual({
+      "error": "Unsupported crypto: foo"
+    });
+  });
+});
+
+
 describe("DID creation endpoint - success", () => {
   it.each([
     ["rsa", "key"],

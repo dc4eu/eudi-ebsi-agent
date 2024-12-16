@@ -53,18 +53,30 @@ def main_create():
     subcommand = cli_args.create_subcommand
 
     match subcommand:
-        case "did":
-            method = cli_args.method
+        case "key":
             crypto = cli_args.crypto
-            endpoint = "create-did/"
+            endpoint = "create-key/"
             resp = requests.get(create_url(service_address, endpoint), json={
                 "crypto": crypto,
-                "method": method,
             })
             data = resp.json()
             flush_json(data)
-            if cli_args.out:
-                with open(os.path.join(storage, cli_args.out), "w") as f:
+            if cli_args.outfile:
+                with open(os.path.join(storage, cli_args.outfile), "w") as f:
+                    json.dump(data, f, indent=4)
+        case "did":
+            method = cli_args.method
+            endpoint = "create-did/"
+            options = {"method": method}
+            with open(os.path.join(storage, cli_args.infile), "r") as f:
+                loaded_key = json.load(f)["key"]
+            options["publicJwk"] = loaded_key["publicJwk"]
+            resp = requests.get(create_url(service_address, endpoint),
+                                json=options)
+            data = resp.json()
+            flush_json(data)
+            if cli_args.outfile:
+                with open(os.path.join(storage, cli_args.outfile), "w") as f:
                     json.dump(data, f, indent=4)
 
 
@@ -108,16 +120,27 @@ def main():
     create = commands.add_parser("create", help="Creation actions")
     create_subcommand = create.add_subparsers(dest="create_subcommand")
 
+    ### create key
+    create_key = create_subcommand.add_parser("key",
+                        help="Create key")
+    create_key.add_argument("--crypto", type=str, metavar="SYSTEM",
+                        choices=["rsa", "RSA", "ES256K", "secp256k1"],
+                        default="ES256K", help="Underlying cryptosystem")
+    create_key.add_argument("--out", type=str, metavar="OUTFILE",
+                        dest="outfile",
+                        help="Save key inside .api-client-storage")
+
     ### create did
     create_did = create_subcommand.add_parser("did",
                         help="Create DID")
-    create_did.add_argument("--crypto", type=str, metavar="<SYSTEM>",
-                        choices=["rsa", "RSA", "ES256K", "secp256k1"],
-                        default="ES256K", help="Underlying cryptosystem")
-    create_did.add_argument("--method", type=str, metavar="<METHOD>",
+    create_did.add_argument("--key", type=str, metavar="INFILE",
+                        required=True, dest="infile",
+                        help="Key to use from .api-client-storage")
+    create_did.add_argument("--method", type=str, metavar="METHOD",
                         choices=["key", "ebsi"],
                         default="ebsi", help="DID method")
-    create_did.add_argument("--out", type=str, metavar="<FILE>",
+    create_did.add_argument("--out", type=str, metavar="OUTFILE",
+                        dest="outfile",
                         help="Save DID inside .api-client-storage")
 
     ## resolve

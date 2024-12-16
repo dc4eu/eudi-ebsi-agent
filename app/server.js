@@ -70,33 +70,40 @@ app.get("/info", async (req, res) => {
 });
 
 
+app.get("/create-key", async (req, res) => {
+  const body = req.body;
+  if (!body) {
+    return res.status(400).json({ error: "Malformed request: No body" });
+  }
+  const { crypto } = req.body;
+  if (!crypto) {
+    return res.status(400).json({ error: "Malformed request: No crypto specified" });
+  }
+
+  let key;
+  try {
+    key = await generateJwkPair(crypto);
+  } catch(err) {
+    return res.status(400).json({ error: err.message });
+  }
+
+  res.json({ key })
+});
+
+
 
 app.get("/create-did", async (req, res) => {
   const body = req.body;
   if (!body) {
     return res.status(400).json({ error: "Malformed request: No body" });
   }
-  const { crypto, jwk, method } = req.body;
+  const { method, publicJwk } = req.body;
 
   if (!method) {
     return res.status(400).json({ error: "Malformed request: No method specified" });
   }
-  if (!jwk && !crypto) {
-    return res.status(400).json({ error: "Malformed request: No crypto specified" });
-  }
-
-  let privateJwk, publicJwk;
-  if (!jwk) {
-    let keypair;
-    try {
-      keypair = await generateJwkPair(crypto);
-    } catch(err) {
-      return res.status(400).json({ error: err.message });
-    }
-    privateJwk = keypair.privateJwk;
-    publicJwk = keypair.publicJwk;
-  } else {
-    publicJwk = jwk;
+  if (!publicJwk) {
+    return res.status(400).json({ error: "Malformed request: No JWK specified" });
   }
 
   let did;
@@ -106,7 +113,7 @@ app.get("/create-did", async (req, res) => {
     return res.status(400).json({ error: err.message });
   }
 
-  res.json({ did, privateJwk, publicJwk });
+  res.json({ did });
 });
 
 

@@ -15,67 +15,86 @@ describe("Service info endpoint", () => {
 });
 
 
-describe("DID creation endpoint - success", () => {
-  it.each([
-    ["rsa", "key"],
-    ["rsa", "ebsi"],
-    ["ES256K", "key"],
-    ["ES256K", "ebsi"],
-    ["secp256k1", "key"],
-    ["secp256k1", "ebsi"],
-  ])(
-  "GET /create-did: 200 - create both JWK and DID - over: %s, method: %s", async (crypto, method) => {
+describe("Key creation endpoint - success", () => {
+  it.each(["rsa", "RSA", "secp256k1", "ES256K"])(
+  "GET /create-key: 200 - create JWK - over: %s", async (crypto) => {
     const res = await client
-      .get("/create-did")
+      .get("/create-key")
       .send({
-        crypto, method
+        crypto
       });
     expect(res.status).toEqual(200);
-    const { did, privateJwk, publicJwk } = res.body;
-    expect(did.startsWith(`did:${method}`)).toEqual(true);
-    expect(privateJwk.kty.toLowerCase()).toEqual(crypto == "rsa" ? crypto : "ec");
-    expect(publicJwk.kty.toLowerCase()).toEqual(crypto == "rsa" ? crypto : "ec");
-  });
-  it.each(["key", "ebsi"])(
-    "GET /create-did: 200 - create DID from submitted JWK - method: %s", async (method) => {
-      const jwk = {
-        "kty": "EC",
-        "crv": "P-256",
-        "x": "ngy44T1vxAT6Di4nr-UaM9K3Tlnz9pkoksDokKFkmNc",
-        "y": "QCRfOKlSM31GTkb4JHx3nXB4G_jSPMsbdjzlkT_UpPc",
-      }
-      const res = await client
-        .get("/create-did")
-        .send({
-          jwk, method
-        });
-      expect(res.status).toEqual(200);
-      const { did, privateJwk, publicJwk } = res.body;
-      expect(did.startsWith(`did:${method}`)).toEqual(true);
-      expect(privateJwk).toEqual(undefined);
-      expect(publicJwk).toEqual(jwk);
+    const { key: { privateJwk, publicJwk }} = res.body;
+    expect(privateJwk.kty.toLowerCase()).toEqual(
+      crypto.toLowerCase() == "rsa" ? crypto.toLowerCase() : "ec"
+    );
+    expect(publicJwk.kty.toLowerCase()).toEqual(
+      crypto.toLowerCase() == "rsa" ? crypto.toLowerCase() : "ec"
+    );
   });
 });
 
-describe("DID creation endpoint - errors", () => {
-  it("GET /create-did: 400 - No method specified", async () => {
+describe("Key creation endpoint - errors", () => {
+  it("GET /create-key: 400 - No crypto specified", async () => {
     const res = await client
-      .get("/create-did")
-        .send({});
-    expect(res.status).toEqual(400);
-    expect(res.body).toEqual({
-      "error": "Malformed request: No method specified"
-    });
-  });
-  it("GET /create-did: 400 - No crypto specified", async () => {
-    const res = await client
-      .get("/create-did")
+      .get("/create-key")
         .send({
-          "method": "ebsi"
         });
     expect(res.status).toEqual(400);
     expect(res.body).toEqual({
       "error": "Malformed request: No crypto specified"
+    });
+  });
+  it("GET /create-key: 400 - Unsupported crypto", async () => {
+    const res = await client
+      .get("/create-key")
+        .send({
+          "crypto": "foo",
+        });
+    expect(res.status).toEqual(400);
+    expect(res.body).toEqual({
+      "error": "Unsupported crypto: foo"
+    });
+  });
+});
+
+
+describe("DID creation endpoint - success", () => {
+  const publicJwk = {
+    "kty": "EC",
+    "crv": "P-256",
+    "x": "ngy44T1vxAT6Di4nr-UaM9K3Tlnz9pkoksDokKFkmNc",
+    "y": "QCRfOKlSM31GTkb4JHx3nXB4G_jSPMsbdjzlkT_UpPc",
+  }
+  it.each(["key", "ebsi"])(
+    "GET /create-did: 200 - create DID - method: %s", async (method) => {
+      const res = await client
+        .get("/create-did")
+        .send({
+          publicJwk, method
+        });
+      expect(res.status).toEqual(200);
+      const { did } = res.body;
+      expect(did.startsWith(`did:${method}`)).toEqual(true);
+  });
+});
+
+describe("DID creation endpoint - errors", () => {
+  const publicJwk = {
+    "kty": "EC",
+    "crv": "P-256",
+    "x": "ngy44T1vxAT6Di4nr-UaM9K3Tlnz9pkoksDokKFkmNc",
+    "y": "QCRfOKlSM31GTkb4JHx3nXB4G_jSPMsbdjzlkT_UpPc",
+  }
+  it("GET /create-did: 400 - No method specified", async () => {
+    const res = await client
+      .get("/create-did")
+        .send({
+          publicJwk
+        });
+    expect(res.status).toEqual(400);
+    expect(res.body).toEqual({
+      "error": "Malformed request: No method specified"
     });
   });
   it("GET /create-did: 400 - Unsupported method", async () => {
@@ -83,23 +102,22 @@ describe("DID creation endpoint - errors", () => {
       .get("/create-did")
         .send({
           "method": "foo",
-          "crypto": "rsa",
+          publicJwk,
         });
     expect(res.status).toEqual(400);
     expect(res.body).toEqual({
       "error": "Unsupported method: foo"
     });
   });
-  it("GET /create-did: 400 - Unsupported crypto", async () => {
+  it("GET /create-did: 400 - No JWK specified", async () => {
     const res = await client
       .get("/create-did")
         .send({
-          "method": "foo",
-          "crypto": "rsa",
+          "method": "ebsi",
         });
     expect(res.status).toEqual(400);
     expect(res.body).toEqual({
-      "error": "Unsupported method: foo"
+      "error": "Malformed request: No JWK specified"
     });
   });
 });

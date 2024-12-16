@@ -22,17 +22,15 @@ GET /info
 GET /create-key
 
 {
-  "crypto": <SYSTEM>,
+  "crypto": "rsa" | "RSA" | "secp256k1" | "ES256K",
 }
 ```
 
 ```
 {
-  "privateJwk": {
-    ...
-  },
-  "publicJwk": {
-    ...
+  "key" {
+    "privateJwk": ...,
+    "publicJwk": ...,
   }
 }
 ```
@@ -43,21 +41,14 @@ GET /create-key
 GET /create-did
 
 {
-  "jwk": <JWK>,
-  "crypto": <SYSTEM>,
-  "method": <METHOD>,
+  "publicJwk": ...,
+  "method": "key" | "ebsi",
 }
 ```
 
 ```
 {
   "did": <DID>,
-  "privateJwk": {
-    ...
-  },
-  "publicJwk": {
-    ...
-  }
 }
 ```
 
@@ -92,19 +83,25 @@ Assuming that the virtual environment is activated:
 python api-client.py --help
 ```
 
-### Examples
+#### Service info
 
 ```shell
 python api-client.py fetch info
 ```
 
-```shell
-python api-client.py create key --crypto secp256k1
-```
+#### Key creation
 
 ```shell
-python api-client.py create did --crypto secp256k1 --method ebsi
+python api-client.py create key --crypto secp256k1 [--out key.json]
 ```
+
+#### DID creation
+
+```shell
+python api-client.py create did --key key.json --method ebsi [--out did.json]
+```
+
+#### DID resolution
 
 ```shell
 python api-client.py resolve did:ebsi:ziDnioxYYLW1a3qUbqTFz4W

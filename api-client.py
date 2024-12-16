@@ -6,6 +6,7 @@ CLI client for interacting with the ebsi-onboader API
 import argparse
 import sys
 import json
+import os
 
 from urllib.parse import urljoin
 from sys import stdout
@@ -62,6 +63,9 @@ def main_create():
             })
             data = resp.json()
             flush_json(data)
+            if cli_args.out:
+                with open(os.path.join(storage, cli_args.out), "w") as f:
+                    json.dump(data, f, indent=4)
 
 
 def main():
@@ -113,6 +117,8 @@ def main():
     create_did.add_argument("--method", type=str, metavar="<METHOD>",
                         choices=["key", "ebsi"],
                         default="ebsi", help="DID method")
+    create_did.add_argument("--out", type=str, metavar="<FILE>",
+                        help="Save DID inside .api-client-storage")
 
     ## resolve
     resolve = commands.add_parser("resolve", help="Resolve DID")
@@ -123,8 +129,10 @@ def main():
 
     global cli_args
     global service_address
+    global storage
     cli_args = parser.parse_args()
     service_address = f"http://{cli_args.host}:{cli_args.port}"
+    storage =  "./.api-client-storage"  # TODO: Consider parametrizing this
 
     match cli_args.command:
         case "fetch":

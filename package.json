@@ -14,8 +14,8 @@
   "dependencies": {
     "@cef-ebsi/ebsi-did-resolver": "^4.0.3",
     "@cef-ebsi/key-did-resolver": "^2.0.4",
-    "@cef-ebsi/verifiable-credential": "^6.1.0",
-    "@cef-ebsi/verifiable-presentation": "^7.1.0",
+    "@cef-ebsi/verifiable-credential": "^3.3.0",
+    "@cef-ebsi/verifiable-presentation": "^4.1.1",
     "@cef-ebsi/wallet-lib": "^5.0.6",
     "did-jwt": "^8.0.4",
     "express": "^4.21.1",

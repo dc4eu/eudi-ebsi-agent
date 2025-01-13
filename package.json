@@ -20,7 +20,8 @@
     "did-jwt": "^8.0.4",
     "express": "^4.21.1",
     "jose": "^5.9.6",
-    "nodemon": "^3.1.7"
+    "nodemon": "^3.1.7",
+    "uuid": "^11.0.5"
   },
   "jest": {
     "testEnvironment": "node",
@@ -30,8 +31,7 @@
     "transform": {
       "^.+\\.[tj]sx?$": "babel-jest"
     },
-    "transformIgnorePatterns": [
-    ],
+    "transformIgnorePatterns": [],
     "moduleFileExtensions": [
       "js",
       "jsx",

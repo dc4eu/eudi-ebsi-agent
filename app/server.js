@@ -1,6 +1,8 @@
 import express from "express";
 import path from "path";
 
+import { v4 as uuidv4 } from "uuid";
+
 import { Resolver } from "did-resolver";
 import { getResolver } from "@cef-ebsi/ebsi-did-resolver";
 
@@ -190,7 +192,7 @@ app.get("/issue-credential", async (req, res) => {
 
   const vcPayload = {
     "@context": ["https://www.w3.org/2018/credentials/v1"],
-    id: "urn:uuid:003a1dd8-a5d2-42ef-8182-e921c0a9f2cd",      // TODO: Properly generate
+    id: `urn:uuid:${uuidv4()}`,
     type: ["VerifiableCredential", "VerifiableAttestation"],
     issuer: issuer_did,
     issuanceDate: "2021-11-01T00:00:00Z",   // TODO: Properly generate

@@ -1,4 +1,5 @@
 import server from "../app/server";
+import { resolveAlgorithm } from "../app/util";
 import supertest from "supertest";
 import { decodeJWT } from "did-jwt";
 import { importJWK, jwtVerify } from "jose";
@@ -229,18 +230,10 @@ describe("DID resolution endpoint - errors", () => {
 
 
 describe("VC issuance endpoint - success", () => {
-  it.each(["rsa", "RSA", "secp256k1", "ES256K"])(
-  "GET /issue-credential: 200 - issue VC - over: %s", async (crypto) => {
+  it.each(["secp256k1"])("GET /issue-credential: 200 - issue VC - over: %s", async (crypto) => {
     const issuer = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
     const subject = "did:ebsi:z25a23eWUxQQzmAgnD9srpMM";
-    // TODO: Parametrize per key type
-    const jwk = {
-      "kty": "EC",
-      "x": "yoVl3PUmiPmwghU1RAtDs4AUbxTAjzjz4EXFuXK2xmE",
-      "y": "n2LoKvFkSuUoS76afCxfPrkWr4kofVpBxZjSC64emL4",
-      "crv": "secp256k1",
-      "d": "yS9Cchyy-s7NVcXqLYKT9dFFPlrWK6O-0gsg5QY29Zg"
-    };
+    const jwk = require("./fixtures/key_2.json"); // secp256k1
     const kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc";
     const res = await client
       .get("/issue-credential")
@@ -255,11 +248,11 @@ describe("VC issuance endpoint - success", () => {
     const { vcJwt } = res.body;
 
     // Verify embedded signature and parse content
-    const publicKey = await importJWK(jwk, "ES256K");
+    const publicKey = await importJWK(jwk, resolveAlgorithm(jwk));
     const { payload, protectedHeader: header } = await jwtVerify(vcJwt, publicKey);
 
     // Check header content
-    expect(header.alg).toEqual("ES256K");  // TODO: Resolve per jwk type
+    expect(header.alg).toEqual("ES256K");
     expect(header.kid).toEqual(kid);
 
     // Check vc content
@@ -279,3 +272,25 @@ describe("VC issuance endpoint - success", () => {
   });
 });
 
+
+describe("VC issuance endpoint - errors", () => {
+  it("GET /issue-credential: 200 - Unsupported signing algorithm", async () => {
+    const issuer = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
+    const subject = "did:ebsi:z25a23eWUxQQzmAgnD9srpMM";
+    const jwk = require("./fixtures/key_1.json"); // rsa
+    const kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc";
+    const res = await client
+      .get("/issue-credential")
+      .set("Content-Type", "application/json")
+      .send({
+        issuer,
+        subject,
+        kid,
+        jwk,
+      });
+    expect(res.status).toEqual(400);
+    expect(res.body).toEqual({
+      "error": "Only secp256k1 keys are allowed to issue!"
+    });
+  });
+});

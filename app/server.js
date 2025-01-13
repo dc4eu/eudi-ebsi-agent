@@ -20,6 +20,7 @@ const didResolver = new Resolver(ebsiResolver);
 const app = express();
 
 import { issueCredential } from "./vc.js";
+import { resolveAlgorithm } from "./util.js";
 
 
 app.use(express.json());
@@ -131,6 +132,10 @@ app.get("/issue-credential", async (req, res) => {
     jwk: issuer_jwk,
     kid: issuer_kid,
   } = req.body;
+
+  if (resolveAlgorithm(issuer_jwk) != "ES256K") {
+    return res.status(400).json({ error: "Only secp256k1 keys are allowed to issue!" });
+  }
 
   const vcJwt = await issueCredential(issuer_jwk, issuer_did, issuer_kid, subject_did);
   res.json({ vcJwt });

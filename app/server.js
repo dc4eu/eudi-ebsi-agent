@@ -190,16 +190,29 @@ app.get("/issue-credential", async (req, res) => {
     kid: issuer_kid,
   } = req.body;
 
+  const now = new Date();
+
+  // valid from 0 seconds from now
+  const validFrom = new Date(now.getTime() + 0 * 60 * 60 * 1000);
+
+  // valid until 10 years from now
+  const validUntil = new Date(now);
+  validUntil.setFullYear(now.getFullYear() + 10);
+
+  // expires at 5 years from now
+  const expirationDate = new Date(now);
+  expirationDate.setFullYear(now.getFullYear() + 5);
+
   const vcPayload = {
     "@context": ["https://www.w3.org/2018/credentials/v1"],
     id: `urn:uuid:${uuidv4()}`,
     type: ["VerifiableCredential", "VerifiableAttestation"],
     issuer: issuer_did,
-    issuanceDate: "2021-11-01T00:00:00Z",   // TODO: Properly generate
-    validFrom: "2021-11-01T00:00:00Z",      // TODO: Properly generate
-    validUntil: "2050-11-01T00:00:00Z",     // TODO: Properly generate
-    expirationDate: "2031-11-30T00:00:00Z", // TODO: Properly generate
-    issued: "2021-10-30T00:00:00Z",         // TODO: Properly generate
+    issuanceDate: now.toISOString(),
+    issued: now.toISOString(),
+    validFrom: validFrom.toISOString(),
+    validUntil: validUntil.toISOString(),
+    expirationDate: expirationDate.toISOString(),
     credentialSubject: {
       // NOTE (GRNET): Must be did:ebsi:<...>due to enabled ebsiAuthority
       id: subject_did,

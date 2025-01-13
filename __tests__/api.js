@@ -130,7 +130,7 @@ describe("DID resolution endpoint - success", () => {
     const did  = "did:ebsi:ziDnioxYYLW1a3qUbqTFz4W";
     const res = await client
       .get("/resolve-did")
-      .set('Content-Type', 'application/json')
+      .set("Content-Type", "application/json")
       .send({
         did
       });
@@ -202,7 +202,7 @@ describe("DID resolution endpoint - errors", () => {
   it("GET /resolve-did: 400 - Invalid DID", async () => {
     const res = await client
       .get("/resolve-did")
-      .set('Content-Type', 'application/json')
+      .set("Content-Type", "application/json")
       .send({
         did: "did:ebsi:666"
       });
@@ -215,7 +215,7 @@ describe("DID resolution endpoint - errors", () => {
   it("GET /resolve-did: 400 - DID not found", async () => {
     const res = await client
       .get("/resolve-did")
-      .set('Content-Type', 'application/json')
+      .set("Content-Type", "application/json")
       .send({
         did: "did:ebsi:zvHWX359A3CvfJnCYaAiAde"
       });
@@ -244,7 +244,7 @@ describe("VC issuance endpoint - success", () => {
     const kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc";
     const res = await client
       .get("/issue-credential")
-      .set('Content-Type', 'application/json')
+      .set("Content-Type", "application/json")
       .send({
         issuer,
         subject,
@@ -264,12 +264,17 @@ describe("VC issuance endpoint - success", () => {
 
     // Check vc content
     const { vc } = payload;
+    const now = new Date();
+    const after5Years = new Date(now);
+    after5Years.setFullYear(now.getFullYear() + 5);
+    const after10Years = new Date(now);
+    after10Years.setFullYear(now.getFullYear() + 10);
     expect(vc.issuer).toEqual(issuer);
-    expect(vc.issuanceDate).toEqual("2021-11-01T00:00:00Z");   // TODO
-    expect(vc.validFrom).toEqual("2021-11-01T00:00:00Z");   // TODO
-    expect(vc.validUntil).toEqual("2050-11-01T00:00:00Z");   // TODO
-    expect(vc.expirationDate).toEqual("2031-11-30T00:00:00Z");   // TODO
-    expect(vc.issued).toEqual("2021-10-30T00:00:00Z");   // TODO
+    expect(vc.issuanceDate).toMatch(now.toISOString().split("T")[0]);   // Current date
+    expect(vc.validFrom).toMatch(now.toISOString().split("T")[0]);   // 0 seconds after current date
+    expect(vc.validUntil).toMatch(after10Years.toISOString().split("T")[0]);   // 10 years after current date
+    expect(vc.expirationDate).toMatch(after5Years.toISOString().split("T")[0]);   // 5 years after current date
+    expect(vc.issued).toMatch(new Date().toISOString().split("T")[0]);   // Current date
     expect(vc.credentialSubject.id).toEqual(subject);
   });
 });

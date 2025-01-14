@@ -28,9 +28,8 @@ GET /create-key
 
 ```
 {
-  "key" {
-    "privateJwk": ...,
-    "publicJwk": ...,
+  "jwk": {
+    ...
   }
 }
 ```
@@ -41,8 +40,10 @@ GET /create-key
 GET /create-did
 
 {
-  "publicJwk": ...,
   "method": "key" | "ebsi",
+  "publicJwk": {
+    ...
+  }
 }
 ```
 
@@ -58,7 +59,9 @@ GET /create-did
 GET /resolve-did
 
 {
-  "did": <DID>
+  "didDocument": {
+    ...
+  }
 }
 ```
 

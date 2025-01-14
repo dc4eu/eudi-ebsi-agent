@@ -31,7 +31,7 @@ app.get("/", (req, res) => {
   res.send("Service is up")
 });
 
-async function generateJwkPair(crypto) {
+async function generatePrivateJwk(crypto) {
   const cryptoMapping = {
     "ES256K": "ES256K",
     "secp256k1": "ES256K",
@@ -43,11 +43,10 @@ async function generateJwkPair(crypto) {
   if (!label) {
       throw Error(`Unsupported crypto: ${crypto}`);
   }
-  const { privateKey, publicKey } = await generateKeyPair(label);
+  const { privateKey } = await generateKeyPair(label);
 
   const privateJwk = await exportJWK(privateKey);
-  const publicJwk = await exportJWK(publicKey);
-  return { privateJwk, publicJwk };
+  return privateJwk;
 }
 
 
@@ -84,14 +83,14 @@ app.get("/create-key", async (req, res) => {
     return res.status(400).json({ error: "Malformed request: No crypto specified" });
   }
 
-  let key;
+  let jwk;
   try {
-    key = await generateJwkPair(crypto);
+    jwk = await generatePrivateJwk(crypto);
   } catch(err) {
     return res.status(400).json({ error: err.message });
   }
 
-  res.json({ key })
+  res.json({ jwk })
 });
 
 

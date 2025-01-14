@@ -27,11 +27,8 @@ describe("Key creation endpoint - success", () => {
         crypto
       });
     expect(res.status).toEqual(200);
-    const { key: { privateJwk, publicJwk }} = res.body;
-    expect(privateJwk.kty.toLowerCase()).toEqual(
-      crypto.toLowerCase() == "rsa" ? crypto.toLowerCase() : "ec"
-    );
-    expect(publicJwk.kty.toLowerCase()).toEqual(
+    const { jwk } = res.body;
+    expect(jwk.kty.toLowerCase()).toEqual(
       crypto.toLowerCase() == "rsa" ? crypto.toLowerCase() : "ec"
     );
   });

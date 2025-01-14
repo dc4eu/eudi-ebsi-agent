@@ -49,6 +49,28 @@ def main_resolve():
     flush_json(data)
 
 
+def get_public_jwk(key_path):
+    with open(key_path, "r") as f:
+        jwk = json.load(f)
+    kty = jwk["kty"]
+
+    if kty == "RSA":
+        return {
+            "kty": kty,
+            "n": jwk["n"],
+            "e": jwk["e"],
+        }
+    elif kty == "EC":
+        return {
+            "kty": kty,
+            "x": jwk["x"],
+            "y": jwk["y"],
+            "crv": jwk["crv"],
+        }
+    else:
+        raise AssertionError(f"Unknown kty: {kty}")
+
+
 def main_create():
     subcommand = cli_args.create_subcommand
 
@@ -61,16 +83,18 @@ def main_create():
             })
             data = resp.json()
             flush_json(data)
-            if cli_args.outfile:
-                with open(os.path.join(storage, cli_args.outfile), "w") as f:
-                    json.dump(data, f, indent=4)
+            if cli_args.outfile and resp.status_code == 200:
+                key_path = os.path.join(storage, cli_args.outfile)
+                with open(key_path, "w") as f:
+                    jwk = data["jwk"]
+                    json.dump(jwk, f, indent=4)
+            print(f"[+] Key saved at {key_path}")
         case "did":
             method = cli_args.method
             endpoint = "create-did/"
             options = {"method": method}
-            with open(os.path.join(storage, cli_args.infile), "r") as f:
-                loaded_key = json.load(f)["key"]
-            options["publicJwk"] = loaded_key["publicJwk"]
+            key_path = os.path.join(storage, cli_args.key_file)
+            options["publicJwk"] = get_public_jwk(key_path)
             resp = requests.get(create_url(service_address, endpoint),
                                 json=options)
             data = resp.json()
@@ -86,8 +110,9 @@ def main_issue():
     match subcommand:
         case "vc":
             issuer = cli_args.issuer
-            with open(cli_args.key) as f:
-                jwk = json.load(f)["key"]["privateJwk"] # TODO
+            with open(os.path.join(storage, cli_args.key_file), "r") as f:
+                loaded_key = json.load(f)["key"]
+            jwk = loaded_key["privateJwk"]
             kid = cli_args.kid
             subject = cli_args.subject
             endpoint = "issue-credential/"
@@ -156,8 +181,8 @@ def main():
     ### create did
     create_did = create_subcommand.add_parser("did",
                         help="Create DID")
-    create_did.add_argument("--key", type=str, metavar="INFILE",
-                        required=True, dest="infile",
+    create_did.add_argument("--key", type=str, metavar="FILE",
+                        required=True, dest="key_file",
                         help="Key to use from .api-client-storage")
     create_did.add_argument("--method", type=str, metavar="METHOD",
                         choices=["key", "ebsi"],
@@ -184,7 +209,7 @@ def main():
                         default="did:ebsi:zxaYaUtb8pvoAtYNWbKcveg",
                         help="Issuer DID")
     issue_vc.add_argument("--key", type=str, metavar="<FILE>",
-                        required=True,
+                        dest="key_file", required=True,
                         help="Issuer's private JWK")
     issue_vc.add_argument("--kid", type=str, metavar="<KID>",
                         default="CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc",

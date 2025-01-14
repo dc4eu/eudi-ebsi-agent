@@ -274,7 +274,83 @@ describe("VC issuance endpoint - success", () => {
 
 
 describe("VC issuance endpoint - errors", () => {
-  it("GET /issue-credential: 200 - Unsupported signing algorithm", async () => {
+  it("GET /issue-credential: 400 - Missing issuer DID", async () => {
+    const issuer = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
+    const subject = "did:ebsi:z25a23eWUxQQzmAgnD9srpMM";
+    const jwk = require("./fixtures/key_2.json");
+    const kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc";
+    const res = await client
+      .get("/issue-credential")
+      .set("Content-Type", "application/json")
+      .send({
+        // issuer,
+        subject,
+        kid,
+        jwk,
+      });
+    expect(res.status).toEqual(400);
+    expect(res.body).toEqual({
+      "error": "Malformed request: No issuer DID specified"
+    });
+  });
+  it("GET /issue-credential: 400 - Missing issuer JWK", async () => {
+    const issuer = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
+    const subject = "did:ebsi:z25a23eWUxQQzmAgnD9srpMM";
+    const jwk = require("./fixtures/key_2.json");
+    const kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc";
+    const res = await client
+      .get("/issue-credential")
+      .set("Content-Type", "application/json")
+      .send({
+        issuer,
+        subject,
+        kid,
+        // jwk,
+      });
+    expect(res.status).toEqual(400);
+    expect(res.body).toEqual({
+      "error": "Malformed request: No issuer JWK specified"
+    });
+  });
+  it("GET /issue-credential: 400 - Missing issuer kid", async () => {
+    const issuer = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
+    const subject = "did:ebsi:z25a23eWUxQQzmAgnD9srpMM";
+    const jwk = require("./fixtures/key_2.json");
+    const kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc";
+    const res = await client
+      .get("/issue-credential")
+      .set("Content-Type", "application/json")
+      .send({
+        issuer,
+        subject,
+        // kid,
+        jwk,
+      });
+    expect(res.status).toEqual(400);
+    expect(res.body).toEqual({
+      "error": "Malformed request: No issuer kid specified"
+    });
+  });
+  it("GET /issue-credential: 400 - Missing subject DID", async () => {
+    const issuer = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
+    const subject = "did:ebsi:z25a23eWUxQQzmAgnD9srpMM";
+    const jwk = require("./fixtures/key_2.json");
+    const kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc";
+    const res = await client
+      .get("/issue-credential")
+      .set("Content-Type", "application/json")
+      .send({
+        issuer,
+        // subject,
+        kid,
+        jwk,
+      });
+    expect(res.status).toEqual(400);
+    expect(res.body).toEqual({
+      "error": "Malformed request: No subject DID specified"
+    });
+  });
+  it("GET /issue-credential: 400 - Unsupported signing algorithm", async () => {
     const issuer = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
     const subject = "did:ebsi:z25a23eWUxQQzmAgnD9srpMM";
     const jwk = require("./fixtures/key_1.json"); // rsa

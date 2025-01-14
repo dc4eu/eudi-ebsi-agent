@@ -84,23 +84,12 @@ def main_issue():
     subcommand = cli_args.issue_subcommand
 
     match subcommand:
-        case "credential":
-            # TODO
-            # issuer = cli_args.issuer
-            issuer = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg"
-            # TODO
-            # subject = cli_args.subject
-            subject = "did:ebsi:z25a23eWUxQQzmAgnD9srpMM"
-            # TODO
-            jwk = {
-                "kty": "EC",
-                "x": "yoVl3PUmiPmwghU1RAtDs4AUbxTAjzjz4EXFuXK2xmE",
-                "y": "n2LoKvFkSuUoS76afCxfPrkWr4kofVpBxZjSC64emL4",
-                "crv": "secp256k1",
-                "d": "yS9Cchyy-s7NVcXqLYKT9dFFPlrWK6O-0gsg5QY29Zg"
-            }
-            # TODO
-            kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc"
+        case "vc":
+            issuer = cli_args.issuer
+            with open(cli_args.key) as f:
+                jwk = json.load(f)["key"]["privateJwk"] # TODO
+            kid = cli_args.kid
+            subject = cli_args.subject
             endpoint = "issue-credential/"
             resp = requests.get(create_url(service_address, endpoint), json={
                 "issuer": issuer,
@@ -110,6 +99,8 @@ def main_issue():
             })
             data = resp.json()
             flush_json(data)
+        case "vp":
+            raise NotImplementedError
 
 
 def main():
@@ -186,13 +177,27 @@ def main():
     issue = commands.add_parser("issue", help="Issuance actions")
     issue_subcommand = issue.add_subparsers(dest="issue_subcommand")
 
-    ### issue did
-    issue_did = issue_subcommand.add_parser("credential",
-                        help="Issue VC credential")
-    issue_did.add_argument("--issuer", type=str, metavar="<DID>",
-                           required=True,
-                           help="Issuer DID")
-    # TODO: More VC issuance options here
+    ### issue vc
+    issue_vc = issue_subcommand.add_parser("vc",
+                        help="Issue verifiable credential")
+    issue_vc.add_argument("--issuer", type=str, metavar="<DID>",
+                        default="did:ebsi:zxaYaUtb8pvoAtYNWbKcveg",
+                        help="Issuer DID")
+    issue_vc.add_argument("--key", type=str, metavar="<FILE>",
+                        required=True,
+                        help="Issuer's private JWK")
+    issue_vc.add_argument("--kid", type=str, metavar="<KID>",
+                        default="CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc",
+                        help="Issuer's JWK kid")
+    issue_vc.add_argument("--subject", type=str, metavar="<DID>",
+                        default="did:ebsi:z25a23eWUxQQzmAgnD9srpMM",
+                        help="Subject DID")
+
+    ### issue vp
+    issue_vp = issue_subcommand.add_parser("vp",
+                        help="Issue verifiable presentation")
+    # TODO: Options
+
 
     global cli_args
     global service_address

@@ -59,11 +59,50 @@ GET /create-did
 GET /resolve-did
 
 {
+  "did": ...
+}
+```
+
+```
+{
   "didDocument": {
     ...
   }
 }
 ```
+
+### VC issuance
+
+```
+GET /issue-credential
+
+{
+  "issuer": <DID>,
+  "jwk": {
+    ...
+  },
+  "kid": <kid>,
+  "subject": <DID>
+}
+```
+
+```
+{
+  "vcJwt": ...
+}
+```
+
+### VC verification
+
+TODO
+
+### VP issuance
+
+TODO
+
+### VP verification
+
+TODO
 
 ## Reference API Client
 
@@ -95,13 +134,13 @@ python api-client.py fetch info
 #### Key creation
 
 ```shell
-python api-client.py create key --crypto secp256k1 [--out key.json]
+python api-client.py create key --crypto secp256k1 --out issuer.jwk
 ```
 
 #### DID creation
 
 ```shell
-python api-client.py create did --key key.json --method ebsi [--out did.json]
+python api-client.py create did --key issuer.jwk --method ebsi --out issuer.did
 ```
 
 #### DID resolution
@@ -109,6 +148,28 @@ python api-client.py create did --key key.json --method ebsi [--out did.json]
 ```shell
 python api-client.py resolve did:ebsi:ziDnioxYYLW1a3qUbqTFz4W
 ```
+
+#### VC issuance
+
+```shell
+python api-client.py issue vc \
+    --key issuer.jwk  \
+    --kid foo \
+    --issuer $(cat .storage/issuer.did) \
+    --subject $(cat .storage/holder.did)
+```
+
+#### VC verification
+
+TODO
+
+#### VP issuance
+
+TODO
+
+#### VP verification
+
+TODO
 
 ## Development
 

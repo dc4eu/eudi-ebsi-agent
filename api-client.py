@@ -76,10 +76,9 @@ def main_create():
 
     match subcommand:
         case "key":
-            crypto = cli_args.crypto
             endpoint = "create-key/"
             resp = requests.get(create_url(service_address, endpoint), json={
-                "crypto": crypto,
+                "alg": cli_args.alg,
             })
             data = resp.json()
             flush_json(data)
@@ -180,9 +179,9 @@ def main():
     ### create key
     create_key = create_subcommand.add_parser("key",
                         help="Create key")
-    create_key.add_argument("--crypto", type=str, metavar="SYSTEM",
-                        choices=["rsa", "RSA", "ES256K", "secp256k1"],
-                        default="ES256K", help="Underlying cryptosystem")
+    create_key.add_argument("--alg", type=str, metavar="ALGORITHM",
+                        choices=["rsa", "secp256k1"],
+                        default="secp256k1", help="Underlying cryptosystem")
     create_key.add_argument("--out", type=str, metavar="OUTFILE",
                         dest="outfile",
                         help="Save key inside .storage")

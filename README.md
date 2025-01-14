@@ -22,7 +22,7 @@ GET /info
 GET /create-key
 
 {
-  "crypto": "rsa" | "RSA" | "secp256k1" | "ES256K",
+  "alg": "rsa" | "secp256k1"
 }
 ```
 

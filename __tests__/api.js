@@ -19,41 +19,41 @@ describe("Service info endpoint", () => {
 
 
 describe("Key creation endpoint - success", () => {
-  it.each(["rsa", "RSA", "secp256k1", "ES256K"])(
-  "GET /create-key: 200 - create JWK - over: %s", async (crypto) => {
+  it.each(["rsa", "secp256k1"])(
+  "GET /create-key: 200 - create JWK - over: %s", async (alg) => {
     const res = await client
       .get("/create-key")
       .send({
-        crypto
+        alg
       });
     expect(res.status).toEqual(200);
     const { jwk } = res.body;
     expect(jwk.kty.toLowerCase()).toEqual(
-      crypto.toLowerCase() == "rsa" ? crypto.toLowerCase() : "ec"
+      alg.toLowerCase() == "rsa" ? alg.toLowerCase() : "ec"
     );
   });
 });
 
 describe("Key creation endpoint - errors", () => {
-  it("GET /create-key: 400 - No crypto specified", async () => {
+  it("GET /create-key: 400 - No algorithm specified", async () => {
     const res = await client
       .get("/create-key")
         .send({
         });
     expect(res.status).toEqual(400);
     expect(res.body).toEqual({
-      "error": "Malformed request: No crypto specified"
+      "error": "Malformed request: No algorithm specified"
     });
   });
-  it("GET /create-key: 400 - Unsupported crypto", async () => {
+  it("GET /create-key: 400 - Unsupported algorithm", async () => {
     const res = await client
       .get("/create-key")
         .send({
-          "crypto": "foo",
+          alg: "foo",
         });
     expect(res.status).toEqual(400);
     expect(res.body).toEqual({
-      "error": "Unsupported crypto: foo"
+      "error": "Unsupported algorithm: foo"
     });
   });
 });
@@ -227,7 +227,7 @@ describe("DID resolution endpoint - errors", () => {
 
 
 describe("VC issuance endpoint - success", () => {
-  it.each(["secp256k1"])("GET /issue-credential: 200 - issue VC - over: %s", async (crypto) => {
+  it.each(["secp256k1"])("GET /issue-credential: 200 - issue VC - over: %s", async (alg) => {
     const issuer = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
     const subject = "did:ebsi:z25a23eWUxQQzmAgnD9srpMM";
     const jwk = require("./fixtures/key_2.json"); // secp256k1

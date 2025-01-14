@@ -31,17 +31,14 @@ app.get("/", (req, res) => {
   res.send("Service is up")
 });
 
-async function generatePrivateJwk(crypto) {
-  const cryptoMapping = {
-    "ES256K": "ES256K",
+async function generatePrivateJwk(algorithm) {
+  const algMapping = {
     "secp256k1": "ES256K",
-    "PS256": "PS256",
     "rsa": "PS256",
-    "RSA": "PS256",
   }
-  const label = cryptoMapping[crypto];
+  const label = algMapping[algorithm];
   if (!label) {
-      throw Error(`Unsupported crypto: ${crypto}`);
+      throw Error(`Unsupported algorithm: ${algorithm}`);
   }
   const { privateKey } = await generateKeyPair(label);
 
@@ -78,14 +75,14 @@ app.get("/create-key", async (req, res) => {
   if (!body) {
     return res.status(400).json({ error: "Malformed request: No body" });
   }
-  const { crypto } = req.body;
-  if (!crypto) {
-    return res.status(400).json({ error: "Malformed request: No crypto specified" });
+  const { alg } = req.body;
+  if (!alg) {
+    return res.status(400).json({ error: "Malformed request: No algorithm specified" });
   }
 
   let jwk;
   try {
-    jwk = await generatePrivateJwk(crypto);
+    jwk = await generatePrivateJwk(alg);
   } catch(err) {
     return res.status(400).json({ error: err.message });
   }

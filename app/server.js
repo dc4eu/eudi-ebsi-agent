@@ -5,7 +5,6 @@ import { Resolver } from "did-resolver";
 import { getResolver } from "@cef-ebsi/ebsi-did-resolver";
 
 import { EbsiWallet } from "@cef-ebsi/wallet-lib";
-import { calculateJwkThumbprint, exportJWK, generateKeyPair } from "jose";
 
 import { util as utilEbsi } from "@cef-ebsi/ebsi-did-resolver";
 
@@ -19,6 +18,7 @@ const didResolver = new Resolver(ebsiResolver);
 
 const app = express();
 
+import { generatePrivateJwk } from "./jwk.js";
 import { issueCredential } from "./vc.js";
 import { resolveAlgorithm } from "./util.js";
 
@@ -30,21 +30,6 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/", (req, res) => {
   res.send("Service is up")
 });
-
-async function generatePrivateJwk(algorithm) {
-  const algMapping = {
-    "secp256k1": "ES256K",
-    "rsa": "PS256",
-  }
-  const label = algMapping[algorithm];
-  if (!label) {
-      throw Error(`Unsupported algorithm: ${algorithm}`);
-  }
-  const { privateKey } = await generateKeyPair(label);
-
-  const privateJwk = await exportJWK(privateKey);
-  return privateJwk;
-}
 
 
 async function createDidFromJwk(method, publicJwk) {

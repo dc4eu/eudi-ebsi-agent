@@ -22,7 +22,7 @@ GET /info
 GET /create-key
 
 {
-  "crypto": "rsa" | "RSA" | "secp256k1" | "ES256K",
+  "alg": "rsa" | "secp256k1"
 }
 ```
 
@@ -74,21 +74,25 @@ GET /resolve-did
 ### VC issuance
 
 ```
-GET /issue-credential
+GET /issue-vc
 
 {
-  "issuer": <DID>,
-  "jwk": {
-    ...
+  "issuer": {
+    "did": ...,
+    "kid": ...,
+    "jwk": {
+      ...
+    }
   },
-  "kid": <kid>,
-  "subject": <DID>
+  "subject": {
+    "did": ...
+  }
 }
 ```
 
 ```
 {
-  "vcJwt": ...
+  "token": ...
 }
 ```
 

@@ -19,41 +19,41 @@ describe("Service info endpoint", () => {
 
 
 describe("Key creation endpoint - success", () => {
-  it.each(["rsa", "RSA", "secp256k1", "ES256K"])(
-  "GET /create-key: 200 - create JWK - over: %s", async (crypto) => {
+  it.each(["rsa", "secp256k1"])(
+  "GET /create-key: 200 - create JWK - over: %s", async (alg) => {
     const res = await client
       .get("/create-key")
       .send({
-        crypto
+        alg
       });
     expect(res.status).toEqual(200);
     const { jwk } = res.body;
     expect(jwk.kty.toLowerCase()).toEqual(
-      crypto.toLowerCase() == "rsa" ? crypto.toLowerCase() : "ec"
+      alg.toLowerCase() == "rsa" ? alg.toLowerCase() : "ec"
     );
   });
 });
 
 describe("Key creation endpoint - errors", () => {
-  it("GET /create-key: 400 - No crypto specified", async () => {
+  it("GET /create-key: 400 - No algorithm specified", async () => {
     const res = await client
       .get("/create-key")
         .send({
         });
     expect(res.status).toEqual(400);
     expect(res.body).toEqual({
-      "error": "Malformed request: No crypto specified"
+      "error": "Malformed request: No algorithm specified"
     });
   });
-  it("GET /create-key: 400 - Unsupported crypto", async () => {
+  it("GET /create-key: 400 - Unsupported algorithm", async () => {
     const res = await client
       .get("/create-key")
         .send({
-          "crypto": "foo",
+          alg: "foo",
         });
     expect(res.status).toEqual(400);
     expect(res.body).toEqual({
-      "error": "Unsupported crypto: foo"
+      "error": "Unsupported algorithm: foo"
     });
   });
 });
@@ -134,56 +134,7 @@ describe("DID resolution endpoint - success", () => {
       });
     expect(res.status).toEqual(200);
     expect(res.headers["content-type"]).toMatch("application\/json");
-    expect(res.body).toEqual({
-      "didDocument": {
-          "@context": [
-              "https://www.w3.org/ns/did/v1",
-              "https://w3id.org/security/suites/jws-2020/v1"
-          ],
-          "id": "did:ebsi:ziDnioxYYLW1a3qUbqTFz4W",
-          "controller": [
-              "did:ebsi:ziDnioxYYLW1a3qUbqTFz4W"
-          ],
-          "verificationMethod": [
-              {
-                  "id": "did:ebsi:ziDnioxYYLW1a3qUbqTFz4W#vCF0KgYJJvoSiiDrMdR6BlrOWzzckOm7iFakMDPOSWc",
-                  "type": "JsonWebKey2020",
-                  "controller": "did:ebsi:ziDnioxYYLW1a3qUbqTFz4W",
-                  "publicKeyJwk": {
-                      "kty": "EC",
-                      "crv": "secp256k1",
-                      "x": "Yr5dSC8vVBhz_a_EiIjH63shj1uqPeg8UjtoUXtsVZU",
-                      "y": "NicHUkZrnM1GgWn1GO4Dl27Q5rD-kG-ODF_jhZYSyQw"
-                  }
-              },
-              {
-                  "id": "did:ebsi:ziDnioxYYLW1a3qUbqTFz4W#f2gYeed1K05Z7kd87u4RPaI9TgJoNNZXo9nh5JsjtGU",
-                  "type": "JsonWebKey2020",
-                  "controller": "did:ebsi:ziDnioxYYLW1a3qUbqTFz4W",
-                  "publicKeyJwk": {
-                      "kty": "EC",
-                      "crv": "P-256",
-                      "x": "wcPJTOaQWzGinDY2XAQ47sWm-7QFUFMuHIdbPrc-I4o",
-                      "y": "LNiGME-6qLagfzc5jVzhcBHuMaNRuNTTcS3gxK7ke1U"
-                  }
-              }
-          ],
-          "authentication": [
-              "did:ebsi:ziDnioxYYLW1a3qUbqTFz4W#vCF0KgYJJvoSiiDrMdR6BlrOWzzckOm7iFakMDPOSWc",
-              "did:ebsi:ziDnioxYYLW1a3qUbqTFz4W#f2gYeed1K05Z7kd87u4RPaI9TgJoNNZXo9nh5JsjtGU"
-          ],
-          "assertionMethod": [
-              "did:ebsi:ziDnioxYYLW1a3qUbqTFz4W#f2gYeed1K05Z7kd87u4RPaI9TgJoNNZXo9nh5JsjtGU"
-          ],
-          "capabilityInvocation": [
-              "did:ebsi:ziDnioxYYLW1a3qUbqTFz4W#vCF0KgYJJvoSiiDrMdR6BlrOWzzckOm7iFakMDPOSWc"
-          ]
-      },
-      "didDocumentMetadata": {},
-      "didResolutionMetadata": {
-          "contentType": "application/did+ld+json"
-      }
-    });
+    expect(res.body).toEqual(require("./fixtures/resolved.json"));
   });
 });
 
@@ -227,26 +178,30 @@ describe("DID resolution endpoint - errors", () => {
 
 
 describe("VC issuance endpoint - success", () => {
-  it.each(["secp256k1"])("GET /issue-credential: 200 - issue VC - over: %s", async (crypto) => {
-    const issuer = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
-    const subject = "did:ebsi:z25a23eWUxQQzmAgnD9srpMM";
-    const jwk = require("./fixtures/key_2.json"); // secp256k1
+  it.each(["secp256k1"])("GET /issue-vc: 200 - issue VC - over: %s", async (alg) => {
+    const issuer_did = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
     const kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc";
+    const subject_did = "did:ebsi:z25a23eWUxQQzmAgnD9srpMM";
+    const jwk = require("./fixtures/key_2.json"); // secp256k1
     const res = await client
-      .get("/issue-credential")
+      .get("/issue-vc")
       .set("Content-Type", "application/json")
       .send({
-        issuer,
-        subject,
-        kid,
-        jwk,
+        issuer: {
+          did: issuer_did,
+          kid,
+          jwk,
+        },
+        subject: {
+          did: subject_did
+        }
       });
     expect(res.status).toEqual(200);
-    const { vcJwt } = res.body;
+    const { token } = res.body;
 
     // Verify embedded signature and parse content
     const publicKey = await importJWK(jwk, resolveAlgorithm(jwk));
-    const { payload, protectedHeader: header } = await jwtVerify(vcJwt, publicKey);
+    const { payload, protectedHeader: header } = await jwtVerify(token, publicKey);
 
     // Check header content
     expect(header.alg).toEqual("ES256K");
@@ -259,107 +214,127 @@ describe("VC issuance endpoint - success", () => {
     after5Years.setFullYear(now.getFullYear() + 5);
     const after10Years = new Date(now);
     after10Years.setFullYear(now.getFullYear() + 10);
-    expect(vc.issuer).toEqual(issuer);
+    expect(vc.issuer).toEqual(issuer_did);
     expect(vc.issuanceDate).toMatch(now.toISOString().split("T")[0]);   // Current date
     expect(vc.validFrom).toMatch(now.toISOString().split("T")[0]);   // 0 seconds after current date
     expect(vc.validUntil).toMatch(after10Years.toISOString().split("T")[0]);   // 10 years after current date
     expect(vc.expirationDate).toMatch(after5Years.toISOString().split("T")[0]);   // 5 years after current date
     expect(vc.issued).toMatch(new Date().toISOString().split("T")[0]);   // Current date
-    expect(vc.credentialSubject.id).toEqual(subject);
+    expect(vc.credentialSubject.id).toEqual(subject_did);
   });
 });
 
 
 describe("VC issuance endpoint - errors", () => {
-  it("GET /issue-credential: 400 - Missing issuer DID", async () => {
-    const issuer = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
-    const subject = "did:ebsi:z25a23eWUxQQzmAgnD9srpMM";
-    const jwk = require("./fixtures/key_2.json");
+  it("GET /issue-vc: 400 - Missing issuer DID", async () => {
+    const issuer_did = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
     const kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc";
+    const subject_did = "did:ebsi:z25a23eWUxQQzmAgnD9srpMM";
+    const jwk = require("./fixtures/key_2.json"); // secp256k1
     const res = await client
-      .get("/issue-credential")
+      .get("/issue-vc")
       .set("Content-Type", "application/json")
       .send({
-        // issuer,
-        subject,
-        kid,
-        jwk,
+        issuer: {
+          // did: issuer_did,
+          kid,
+          jwk,
+        },
+        subject: {
+          did: subject_did
+        }
       });
     expect(res.status).toEqual(400);
     expect(res.body).toEqual({
       "error": "Malformed request: No issuer DID specified"
     });
   });
-  it("GET /issue-credential: 400 - Missing issuer JWK", async () => {
-    const issuer = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
-    const subject = "did:ebsi:z25a23eWUxQQzmAgnD9srpMM";
-    const jwk = require("./fixtures/key_2.json");
+  it("GET /issue-vc: 400 - Missing issuer JWK", async () => {
+    const issuer_did = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
     const kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc";
+    const subject_did = "did:ebsi:z25a23eWUxQQzmAgnD9srpMM";
+    const jwk = require("./fixtures/key_2.json"); // secp256k1
     const res = await client
-      .get("/issue-credential")
+      .get("/issue-vc")
       .set("Content-Type", "application/json")
       .send({
-        issuer,
-        subject,
-        kid,
-        // jwk,
+        issuer: {
+          did: issuer_did,
+          kid,
+          // jwk,
+        },
+        subject: {
+          did: subject_did
+        }
       });
     expect(res.status).toEqual(400);
     expect(res.body).toEqual({
       "error": "Malformed request: No issuer JWK specified"
     });
   });
-  it("GET /issue-credential: 400 - Missing issuer kid", async () => {
-    const issuer = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
-    const subject = "did:ebsi:z25a23eWUxQQzmAgnD9srpMM";
-    const jwk = require("./fixtures/key_2.json");
+  it("GET /issue-vc: 400 - Missing issuer kid", async () => {
+    const issuer_did = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
     const kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc";
+    const subject_did = "did:ebsi:z25a23eWUxQQzmAgnD9srpMM";
+    const jwk = require("./fixtures/key_2.json"); // secp256k1
     const res = await client
-      .get("/issue-credential")
+      .get("/issue-vc")
       .set("Content-Type", "application/json")
       .send({
-        issuer,
-        subject,
-        // kid,
-        jwk,
+        issuer: {
+          did: issuer_did,
+          // kid,
+          jwk,
+        },
+        subject: {
+          did: subject_did
+        }
       });
     expect(res.status).toEqual(400);
     expect(res.body).toEqual({
       "error": "Malformed request: No issuer kid specified"
     });
   });
-  it("GET /issue-credential: 400 - Missing subject DID", async () => {
-    const issuer = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
-    const subject = "did:ebsi:z25a23eWUxQQzmAgnD9srpMM";
-    const jwk = require("./fixtures/key_2.json");
+  it("GET /issue-vc: 400 - Missing subject DID", async () => {
+    const issuer_did = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
     const kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc";
+    const subject_did = "did:ebsi:z25a23eWUxQQzmAgnD9srpMM";
+    const jwk = require("./fixtures/key_2.json"); // secp256k1
     const res = await client
-      .get("/issue-credential")
+      .get("/issue-vc")
       .set("Content-Type", "application/json")
       .send({
-        issuer,
-        // subject,
-        kid,
-        jwk,
+        issuer: {
+          did: issuer_did,
+          kid,
+          jwk,
+        },
+        subject: {
+          // did: subject_did
+        }
       });
     expect(res.status).toEqual(400);
     expect(res.body).toEqual({
       "error": "Malformed request: No subject DID specified"
     });
   });
-  it("GET /issue-credential: 400 - Unsupported signing algorithm", async () => {
-    const issuer = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
-    const subject = "did:ebsi:z25a23eWUxQQzmAgnD9srpMM";
-    const jwk = require("./fixtures/key_1.json"); // rsa
+  it("GET /issue-vc: 400 - Unsupported signing algorithm", async () => {
+    const issuer_did = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
     const kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc";
+    const subject_did = "did:ebsi:z25a23eWUxQQzmAgnD9srpMM";
+    const jwk = require("./fixtures/key_1.json"); // secp256k1
     const res = await client
-      .get("/issue-credential")
+      .get("/issue-vc")
       .set("Content-Type", "application/json")
       .send({
-        issuer,
-        subject,
-        kid,
-        jwk,
+        issuer: {
+          did: issuer_did,
+          kid,
+          jwk,
+        },
+        subject: {
+          did: subject_did
+        }
       });
     expect(res.status).toEqual(400);
     expect(res.body).toEqual({

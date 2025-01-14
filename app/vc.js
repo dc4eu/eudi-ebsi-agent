@@ -4,7 +4,7 @@ import { ES256KSigner } from "did-jwt";
 import { base64ToBytes, resolveAlgorithm } from "./util.js";
 
 
-export async function issueCredential(issuer_jwk, issuer_did, issuer_kid, subject_did) {
+export async function issueCredential(jwk, issuer_did, kid, subject_did) {
   const now = new Date();
 
   // valid from 0 seconds from now
@@ -83,11 +83,11 @@ export async function issueCredential(issuer_jwk, issuer_did, issuer_kid, subjec
 
 
   // TODO: Resolve signer type per alg
-  const signer = ES256KSigner(base64ToBytes(issuer_jwk["d"]));
+  const signer = ES256KSigner(base64ToBytes(jwk["d"]));
   const issuer = {
       did: issuer_did,
-      kid: issuer_kid,
-      alg: resolveAlgorithm(issuer_jwk),
+      kid,
+      alg: resolveAlgorithm(jwk),
       signer,
   };
   return createVerifiableCredentialJwt(vcPayload, issuer, options);

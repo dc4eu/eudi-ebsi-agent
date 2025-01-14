@@ -1,0 +1,4 @@
+# Ignore everything in this directory except this file and sample onboarded did
+*
+!.gitignore
+!onboarded-sample.did

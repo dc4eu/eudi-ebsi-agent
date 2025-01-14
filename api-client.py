@@ -88,7 +88,7 @@ def main_create():
                 with open(key_path, "w") as f:
                     jwk = data["jwk"]
                     json.dump(jwk, f, indent=4)
-            print(f"[+] Key saved at {key_path}")
+                print(f"[+] Key saved at {key_path}")
         case "did":
             method = cli_args.method
             endpoint = "create-did/"
@@ -99,9 +99,12 @@ def main_create():
                                 json=options)
             data = resp.json()
             flush_json(data)
-            if cli_args.outfile:
-                with open(os.path.join(storage, cli_args.outfile), "w") as f:
-                    json.dump(data, f, indent=4)
+            if cli_args.outfile and resp.status_code == 200:
+                did_path = os.path.join(storage, cli_args.outfile)
+                with open(did_path, "w") as f:
+                    did = data["did"]
+                    f.write(did)
+                print(f"[+] DID saved at {did_path}")
 
 
 def main_issue():
@@ -110,11 +113,11 @@ def main_issue():
     match subcommand:
         case "vc":
             issuer = cli_args.issuer
-            with open(os.path.join(storage, cli_args.key_file), "r") as f:
-                loaded_key = json.load(f)["key"]
-            jwk = loaded_key["privateJwk"]
             kid = cli_args.kid
             subject = cli_args.subject
+            key_path = os.path.join(storage, cli_args.key_file)
+            with open(key_path, "r") as f:
+                jwk = json.load(f)
             endpoint = "issue-credential/"
             resp = requests.get(create_url(service_address, endpoint), json={
                 "issuer": issuer,
@@ -124,6 +127,12 @@ def main_issue():
             })
             data = resp.json()
             flush_json(data)
+            if cli_args.outfile and resp.status_code == 200:
+                vc_path = os.path.join(storage, cli_args.outfile)
+                with open(vc_path, "w") as f:
+                    token = data["vcJwt"]
+                    f.write(token)
+                print(f"[+] VC token saved at {vc_path}")
         case "vp":
             raise NotImplementedError
 
@@ -176,20 +185,20 @@ def main():
                         default="ES256K", help="Underlying cryptosystem")
     create_key.add_argument("--out", type=str, metavar="OUTFILE",
                         dest="outfile",
-                        help="Save key inside .api-client-storage")
+                        help="Save key inside .storage")
 
     ### create did
     create_did = create_subcommand.add_parser("did",
                         help="Create DID")
     create_did.add_argument("--key", type=str, metavar="FILE",
                         required=True, dest="key_file",
-                        help="Key to use from .api-client-storage")
+                        help="Key to use from .storage")
     create_did.add_argument("--method", type=str, metavar="METHOD",
                         choices=["key", "ebsi"],
                         default="ebsi", help="DID method")
     create_did.add_argument("--out", type=str, metavar="OUTFILE",
                         dest="outfile",
-                        help="Save DID inside .api-client-storage")
+                        help="Save DID inside .storage")
 
     ## resolve
     resolve = commands.add_parser("resolve", help="Resolve DID")
@@ -217,6 +226,9 @@ def main():
     issue_vc.add_argument("--subject", type=str, metavar="<DID>",
                         default="did:ebsi:z25a23eWUxQQzmAgnD9srpMM",
                         help="Subject DID")
+    issue_vc.add_argument("--out", type=str, metavar="OUTFILE",
+                        dest="outfile",
+                        help="Save VC inside .storage")
 
     ### issue vp
     issue_vp = issue_subcommand.add_parser("vp",
@@ -229,7 +241,7 @@ def main():
     global storage
     cli_args = parser.parse_args()
     service_address = f"http://{cli_args.host}:{cli_args.port}"
-    storage =  "./.api-client-storage"  # TODO: Consider parametrizing this
+    storage =  ".storage"  # TODO: Consider parametrizing this
 
     match cli_args.command:
         case "fetch":

@@ -1,27 +1,12 @@
 import express from "express";
 import path from "path";
 
-import { Resolver } from "did-resolver";
-import { getResolver } from "@cef-ebsi/ebsi-did-resolver";
-
-import { EbsiWallet } from "@cef-ebsi/wallet-lib";
-
-import { util as utilEbsi } from "@cef-ebsi/ebsi-did-resolver";
-
-import { randomBytes } from "node:crypto";
-
-const registry = "https://api-pilot.ebsi.eu/did-registry/v5/identifiers";
-
-const resolverConfig = { registry };
-const ebsiResolver = getResolver(resolverConfig);
-const didResolver = new Resolver(ebsiResolver);
-
-const app = express();
-
 import { generatePrivateJwk } from "./jwk.js";
+import { createDidFromJwk, resolveDid } from "./did.js";
 import { issueCredential } from "./vc.js";
 import { resolveAlgorithm } from "./util.js";
 
+const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -30,22 +15,6 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/", (req, res) => {
   res.send("Service is up")
 });
-
-
-async function createDidFromJwk(method, publicJwk) {
-  const methodMapping = {
-    "key": "NATURAL_PERSON",
-    "ebsi": "LEGAL_ENTITY",
-  };
-
-  const label = methodMapping[method];
-  if (!label) {
-      throw Error(`Unsupported method: ${method}`);
-  }
-  const did = EbsiWallet.createDid(label, publicJwk);
-
-  return did;
-}
 
 
 app.get("/info", async (req, res) => {
@@ -146,7 +115,7 @@ app.get("/resolve-did", async (req, res) => {
     return res.status(400).json({ error: "Malformed request: No did specified" });
   }
 
-  const result = await didResolver.resolve(body.did);
+  const result = await resolveDid(body.did);
   if (!result.didDocument) {
     const error = result.didResolutionMetadata.error;
     switch (error) {

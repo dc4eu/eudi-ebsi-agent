@@ -19,6 +19,10 @@ const didResolver = new Resolver(ebsiResolver);
 
 const app = express();
 
+import { issueCredential } from "./vc.js";
+import { resolveAlgorithm } from "./util.js";
+
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -27,7 +31,7 @@ app.get("/", (req, res) => {
   res.send("Service is up")
 });
 
-async function generateJwkPair(crypto) {
+async function generatePrivateJwk(crypto) {
   const cryptoMapping = {
     "ES256K": "ES256K",
     "secp256k1": "ES256K",
@@ -39,11 +43,10 @@ async function generateJwkPair(crypto) {
   if (!label) {
       throw Error(`Unsupported crypto: ${crypto}`);
   }
-  const { privateKey, publicKey } = await generateKeyPair(label);
+  const { privateKey } = await generateKeyPair(label);
 
   const privateJwk = await exportJWK(privateKey);
-  const publicJwk = await exportJWK(publicKey);
-  return { privateJwk, publicJwk };
+  return privateJwk;
 }
 
 
@@ -80,14 +83,14 @@ app.get("/create-key", async (req, res) => {
     return res.status(400).json({ error: "Malformed request: No crypto specified" });
   }
 
-  let key;
+  let jwk;
   try {
-    key = await generateJwkPair(crypto);
+    jwk = await generatePrivateJwk(crypto);
   } catch(err) {
     return res.status(400).json({ error: err.message });
   }
 
-  res.json({ key })
+  res.json({ jwk })
 });
 
 
@@ -114,6 +117,40 @@ app.get("/create-did", async (req, res) => {
   }
 
   res.json({ did });
+});
+
+
+app.get("/issue-credential", async (req, res) => {
+  const body = req.body;
+  if (!body) {
+    return res.status(400).json({ error: "Malformed request: No body" });
+  }
+  const {
+    issuer: issuer_did, subject: subject_did, jwk: issuer_jwk, kid: issuer_kid,
+  } = req.body;
+
+  if (!issuer_did) {
+    return res.status(400).json({ error: "Malformed request: No issuer DID specified" });
+  }
+
+  if (!issuer_jwk) {
+    return res.status(400).json({ error: "Malformed request: No issuer JWK specified" });
+  }
+
+  if (!issuer_kid) {
+    return res.status(400).json({ error: "Malformed request: No issuer kid specified" });
+  }
+
+  if (!subject_did) {
+    return res.status(400).json({ error: "Malformed request: No subject DID specified" });
+  }
+
+  if (resolveAlgorithm(issuer_jwk) != "ES256K") {
+    return res.status(400).json({ error: "Only secp256k1 keys are allowed to issue!" });
+  }
+
+  const vcJwt = await issueCredential(issuer_jwk, issuer_did, issuer_kid, subject_did);
+  res.json({ vcJwt });
 });
 
 

@@ -12,4 +12,6 @@ COPY ./app .
 
 EXPOSE 3000
 
+RUN npm cache clean --force
+
 CMD ["npm", "run", "dev"]

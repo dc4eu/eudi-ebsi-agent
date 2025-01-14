@@ -74,21 +74,25 @@ GET /resolve-did
 ### VC issuance
 
 ```
-GET /issue-credential
+GET /issue-vc
 
 {
-  "issuer": <DID>,
-  "jwk": {
-    ...
+  "issuer": {
+    "did": ...,
+    "kid": ...,
+    "jwk": {
+      ...
+    }
   },
-  "kid": <kid>,
-  "subject": <DID>
+  "subject": {
+    "did": ...
+  }
 }
 ```
 
 ```
 {
-  "vcJwt": ...
+  "token": ...
 }
 ```
 

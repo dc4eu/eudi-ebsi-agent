@@ -71,24 +71,29 @@ app.get("/create-did", async (req, res) => {
 });
 
 
-app.get("/issue-credential", async (req, res) => {
+app.get("/issue-vc", async (req, res) => {
   const body = req.body;
   if (!body) {
     return res.status(400).json({ error: "Malformed request: No body" });
   }
-  const {
-    issuer: issuer_did, subject: subject_did, jwk: issuer_jwk, kid: issuer_kid,
-  } = req.body;
+
+  const { issuer, subject } = req.body;
+  if (!issuer || !subject) {
+    return res.status(400).json({ error: "Both issuer and subject must be provided" });
+  }
+
+  const { did: issuer_did, jwk, kid } = issuer;
+  const { did: subject_did } = subject;
 
   if (!issuer_did) {
     return res.status(400).json({ error: "Malformed request: No issuer DID specified" });
   }
 
-  if (!issuer_jwk) {
+  if (!jwk) {
     return res.status(400).json({ error: "Malformed request: No issuer JWK specified" });
   }
 
-  if (!issuer_kid) {
+  if (!kid) {
     return res.status(400).json({ error: "Malformed request: No issuer kid specified" });
   }
 
@@ -96,12 +101,12 @@ app.get("/issue-credential", async (req, res) => {
     return res.status(400).json({ error: "Malformed request: No subject DID specified" });
   }
 
-  if (resolveAlgorithm(issuer_jwk) != "ES256K") {
+  if (resolveAlgorithm(jwk) != "ES256K") {
     return res.status(400).json({ error: "Only secp256k1 keys are allowed to issue!" });
   }
 
-  const vcJwt = await issueCredential(issuer_jwk, issuer_did, issuer_kid, subject_did);
-  res.json({ vcJwt });
+  const token = await issueCredential(jwk, issuer_did, kid, subject_did);
+  res.json({ token });
 });
 
 

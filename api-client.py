@@ -111,18 +111,20 @@ def main_issue():
 
     match subcommand:
         case "vc":
-            issuer = cli_args.issuer
-            kid = cli_args.kid
-            subject = cli_args.subject
             key_path = os.path.join(storage, cli_args.key_file)
             with open(key_path, "r") as f:
                 jwk = json.load(f)
-            endpoint = "issue-credential/"
+
+            endpoint = "issue-vc/"
             resp = requests.get(create_url(service_address, endpoint), json={
-                "issuer": issuer,
-                "subject": subject,
-                "jwk": jwk,
-                "kid": kid,
+                "issuer": {
+                    "did": cli_args.issuer,
+                    "jwk": jwk,
+                    "kid": cli_args.kid,
+                },
+                "subject": {
+                    "did": cli_args.subject
+                }
             })
             data = resp.json()
             flush_json(data)

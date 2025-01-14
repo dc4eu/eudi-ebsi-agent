@@ -13,7 +13,8 @@ from sys import stdout
 
 import requests
 
-service_address = None
+STORAGE =  ".storage"
+SERVICE_ADDRESS = None
 cli_args = None
 
 
@@ -21,35 +22,9 @@ def create_url(address, endpoint, prefix=""):
     return urljoin(address, urljoin(prefix + "/", endpoint.lstrip("/")))
 
 def flush_json(payload, indent=4, nojump=False):
-    buff = json.dumps(payload, indent=indent)
-    if nojump:
-        buff = buff.replace(",\n", ", ").replace("[\n", "[").replace("\n]", "]")
-    stdout.write(buff + "\n")
+    print(json.dumps(payload, indent=indent))
 
-
-def main_fetch():
-    subcommand = cli_args.fetch_subcommand
-
-    match subcommand:
-        case "info":
-            endpoint = "info/"
-    resp = requests.get(create_url(service_address, endpoint))
-    data = resp.json()
-    if not cli_args.suppress:
-        flush_json(data)
-
-
-def main_resolve():
-    did = cli_args.did
-    endpoint = "resolve-did/"
-    resp = requests.get(create_url(service_address, endpoint), json={
-        "did": did
-    })
-    data = resp.json()
-    flush_json(data)
-
-
-def get_public_jwk(key_path):
+def load_public_jwk(key_path):
     with open(key_path, "r") as f:
         jwk = json.load(f)
     kty = jwk["kty"]
@@ -71,19 +46,44 @@ def get_public_jwk(key_path):
         raise AssertionError(f"Unknown kty: {kty}")
 
 
+def main_fetch():
+    subcommand = cli_args.fetch_subcommand
+
+    match subcommand:
+        case "info":
+            endpoint = "info/"
+            resp = requests.get(create_url(SERVICE_ADDRESS,
+                                           endpoint))
+            data = resp.json()
+            flush_json(data)
+        case _:
+            print("No action specified")
+            sys.exit(1)
+
+
+def main_resolve():
+    did = cli_args.did
+    endpoint = "resolve-did/"
+    resp = requests.get(create_url(SERVICE_ADDRESS, endpoint), json={
+        "did": did
+    })
+    data = resp.json()
+    flush_json(data)
+
+
 def main_create():
     subcommand = cli_args.create_subcommand
 
     match subcommand:
         case "key":
             endpoint = "create-key/"
-            resp = requests.get(create_url(service_address, endpoint), json={
+            resp = requests.get(create_url(SERVICE_ADDRESS, endpoint), json={
                 "alg": cli_args.alg,
             })
             data = resp.json()
             flush_json(data)
             if cli_args.outfile and resp.status_code == 200:
-                key_path = os.path.join(storage, cli_args.outfile)
+                key_path = os.path.join(STORAGE, cli_args.outfile)
                 with open(key_path, "w") as f:
                     jwk = data["jwk"]
                     json.dump(jwk, f, indent=4)
@@ -92,18 +92,21 @@ def main_create():
             method = cli_args.method
             endpoint = "create-did/"
             options = {"method": method}
-            key_path = os.path.join(storage, cli_args.key_file)
-            options["publicJwk"] = get_public_jwk(key_path)
-            resp = requests.get(create_url(service_address, endpoint),
+            key_path = os.path.join(STORAGE, cli_args.key_file)
+            options["publicJwk"] = load_public_jwk(key_path)
+            resp = requests.get(create_url(SERVICE_ADDRESS, endpoint),
                                 json=options)
             data = resp.json()
             flush_json(data)
             if cli_args.outfile and resp.status_code == 200:
-                did_path = os.path.join(storage, cli_args.outfile)
+                did_path = os.path.join(STORAGE, cli_args.outfile)
                 with open(did_path, "w") as f:
                     did = data["did"]
                     f.write(did)
                 print(f"[+] DID saved at {did_path}")
+        case _:
+            print("No action specified")
+            sys.exit(1)
 
 
 def main_issue():
@@ -111,12 +114,12 @@ def main_issue():
 
     match subcommand:
         case "vc":
-            key_path = os.path.join(storage, cli_args.key_file)
+            key_path = os.path.join(STORAGE, cli_args.key_file)
             with open(key_path, "r") as f:
                 jwk = json.load(f)
 
             endpoint = "issue-vc/"
-            resp = requests.get(create_url(service_address, endpoint), json={
+            resp = requests.get(create_url(SERVICE_ADDRESS, endpoint), json={
                 "issuer": {
                     "did": cli_args.issuer,
                     "jwk": jwk,
@@ -129,13 +132,29 @@ def main_issue():
             data = resp.json()
             flush_json(data)
             if cli_args.outfile and resp.status_code == 200:
-                vc_path = os.path.join(storage, cli_args.outfile)
+                vc_path = os.path.join(STORAGE, cli_args.outfile)
                 with open(vc_path, "w") as f:
                     token = data["vcJwt"]
                     f.write(token)
                 print(f"[+] VC token saved at {vc_path}")
         case "vp":
             raise NotImplementedError
+        case _:
+            print("No action specified")
+            sys.exit(1)
+
+
+def main_verify():
+    subcommand = cli_args.verify_subcommand
+
+    match subcommand:
+        case "vc":
+            raise NotImplementedError
+        case "vp":
+            raise NotImplementedError
+        case _:
+            print("No action specified")
+            sys.exit(1)
 
 
 def main():
@@ -166,8 +185,6 @@ def main():
 
     ## fetch
     fetch = commands.add_parser("fetch", help="Fetch resource actions")
-    fetch.add_argument("--suppress", action="store_true", default=False,
-                        help="Do not display JSON response")
     fetch_subcommand = fetch.add_subparsers(dest="fetch_subcommand")
 
     ## fetch info
@@ -236,13 +253,23 @@ def main():
                         help="Issue verifiable presentation")
     # TODO: Options
 
+    # verify
+    verify = commands.add_parser("verify", help="Verification actions")
+    verify_subcommand = verify.add_subparsers(dest="verify_subcommand")
 
-    global cli_args
-    global service_address
-    global storage
+    ## verify vc
+    verify_vc = verify_subcommand.add_parser("vc",
+                        help="verify credential")
+    # TODO: Options
+
+    ## verify vp
+    verify_vp = verify_subcommand.add_parser("vp",
+                        help="verify presentation")
+    # TODO: Options
+
+    global SERVICE_ADDRESS, cli_args
     cli_args = parser.parse_args()
-    service_address = f"http://{cli_args.host}:{cli_args.port}"
-    storage =  ".storage"  # TODO: Consider parametrizing this
+    SERVICE_ADDRESS = f"http://{cli_args.host}:{cli_args.port}"
 
     match cli_args.command:
         case "fetch":
@@ -253,6 +280,8 @@ def main():
             main_resolve()
         case "issue":
             main_issue()
+        case "verify":
+            main_verify()
 
 
 

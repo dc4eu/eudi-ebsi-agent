@@ -1,4 +1,4 @@
-# EBSI Ledger Onboarding Service
+# EBSI Agent Service
 
 ## Spin up service
 
@@ -138,7 +138,7 @@ python api-client.py fetch info
 #### Key creation
 
 ```shell
-python api-client.py create key --crypto secp256k1 --out issuer.jwk
+python api-client.py create key --alg secp256k1 --out issuer.jwk
 ```
 
 #### DID creation

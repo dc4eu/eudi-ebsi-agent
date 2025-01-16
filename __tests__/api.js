@@ -20,7 +20,7 @@ describe("Service info endpoint", () => {
 });
 
 
-describe("Key creation endpoint - success", () => {
+describe("JWK creation endpoint - success", () => {
   it.each(["rsa", "secp256k1"])(
   "GET /create-key: 200 - create JWK - over: %s", async (alg) => {
     const res = await client
@@ -36,15 +36,15 @@ describe("Key creation endpoint - success", () => {
   });
 });
 
-describe("Key creation endpoint - errors", () => {
-  it("GET /create-key: 400 - No algorithm specified", async () => {
+describe("JWK creation endpoint - errors", () => {
+  it("GET /create-key: 400 - No algorithm provided", async () => {
     const res = await client
       .get("/create-key")
         .send({
         });
     expect(res.status).toEqual(400);
     expect(res.body).toEqual({
-      "error": "Malformed request: No algorithm specified"
+      "error": "Bad request: No algorithm provided"
     });
   });
   it("GET /create-key: 400 - Unsupported algorithm", async () => {
@@ -88,7 +88,7 @@ describe("DID creation endpoint - errors", () => {
     "x": "ngy44T1vxAT6Di4nr-UaM9K3Tlnz9pkoksDokKFkmNc",
     "y": "QCRfOKlSM31GTkb4JHx3nXB4G_jSPMsbdjzlkT_UpPc",
   }
-  it("GET /create-did: 400 - No method specified", async () => {
+  it("GET /create-did: 400 - No method provided", async () => {
     const res = await client
       .get("/create-did")
         .send({
@@ -96,7 +96,7 @@ describe("DID creation endpoint - errors", () => {
         });
     expect(res.status).toEqual(400);
     expect(res.body).toEqual({
-      "error": "Malformed request: No method specified"
+      "error": "Bad request: No method provided"
     });
   });
   it("GET /create-did: 400 - Unsupported method", async () => {
@@ -111,7 +111,7 @@ describe("DID creation endpoint - errors", () => {
       "error": "Unsupported method: foo"
     });
   });
-  it("GET /create-did: 400 - No JWK specified", async () => {
+  it("GET /create-did: 400 - No JWK provided", async () => {
     const res = await client
       .get("/create-did")
         .send({
@@ -119,7 +119,7 @@ describe("DID creation endpoint - errors", () => {
         });
     expect(res.status).toEqual(400);
     expect(res.body).toEqual({
-      "error": "Malformed request: No JWK specified"
+      "error": "Bad request: No JWK provided"
     });
   });
 });
@@ -142,12 +142,12 @@ describe("DID resolution endpoint - success", () => {
 
 
 describe("DID resolution endpoint - errors", () => {
-  it("GET /resolve-did: 400 - No did specified", async () => {
+  it("GET /resolve-did: 400 - No DID provided", async () => {
     const res = await client.get("/resolve-did");
     expect(res.status).toEqual(400);
     expect(res.headers["content-type"]).toMatch("application\/json");
     expect(res.body).toEqual({
-      "error": "Malformed request: No did specified"
+      "error": "Bad request: No did provided"
     });
   });
   it("GET /resolve-did: 400 - Invalid DID", async () => {
@@ -248,7 +248,7 @@ describe("VC issuance endpoint - errors", () => {
       });
     expect(res.status).toEqual(400);
     expect(res.body).toEqual({
-      "error": "Malformed request: No issuer DID specified"
+      "error": "Bad request: No issuer provided"
     });
   });
   it("GET /issue-vc: 400 - Missing issuer JWK", async () => {
@@ -271,7 +271,7 @@ describe("VC issuance endpoint - errors", () => {
       });
     expect(res.status).toEqual(400);
     expect(res.body).toEqual({
-      "error": "Malformed request: No issuer JWK specified"
+      "error": "Bad request: No issuer JWK provided"
     });
   });
   it("GET /issue-vc: 400 - Missing issuer kid", async () => {
@@ -294,7 +294,7 @@ describe("VC issuance endpoint - errors", () => {
       });
     expect(res.status).toEqual(400);
     expect(res.body).toEqual({
-      "error": "Malformed request: No issuer kid specified"
+      "error": "Bad request: No issuer kid provided"
     });
   });
   it("GET /issue-vc: 400 - Missing subject DID", async () => {
@@ -317,7 +317,7 @@ describe("VC issuance endpoint - errors", () => {
       });
     expect(res.status).toEqual(400);
     expect(res.body).toEqual({
-      "error": "Malformed request: No subject DID specified"
+      "error": "Bad request: No subject provided"
     });
   });
   it("GET /issue-vc: 400 - Unsupported signing algorithm", async () => {
@@ -346,23 +346,23 @@ describe("VC issuance endpoint - errors", () => {
 });
 
 
-// describe("VC verification endpoint - success", () => {
-//   it.each([
-//     "./fixtures/vc.jwt",
-//   ])("GET /verify-vc: 200 - verify VC: %s", async (vc_file) => {
-//     const token = fs.readFileSync(path.join(__dirname, vc_file), {
-//       encoding: "utf-8", flag: "r"
-//     });
-//     const res = await client
-//       .get("/verify-vc")
-//       .set("Content-Type", "application/json")
-//       .send({
-//         token
-//       });
-//     expect(res.status).toEqual(200);
-//     expect(res.body.result).toEqual(require("./fixtures/vc.retrieved.json"));
-//   });
-// });
+describe("VC verification endpoint - success", () => {
+  it.each([
+    "./fixtures/vc.jwt",
+  ])("GET /verify-vc: 200 - verify VC: %s", async (vc_file) => {
+    const token = fs.readFileSync(path.join(__dirname, vc_file), {
+      encoding: "utf-8", flag: "r"
+    });
+    const res = await client
+      .get("/verify-vc")
+      .set("Content-Type", "application/json")
+      .send({
+        token
+      });
+    expect(res.status).toEqual(200);
+    expect(res.body.result).toEqual(require("./fixtures/vc.retrieved.json"));
+  });
+});
 
 
 describe("VC verification endpoint - errors", () => {
@@ -375,7 +375,7 @@ describe("VC verification endpoint - errors", () => {
       });
     expect(res.status).toEqual(400);
     expect(res.body).toEqual({
-      "error": "Malformed request: No VC token provided"
+      "error": "Bad request: No VC token provided"
     });
   });
 });

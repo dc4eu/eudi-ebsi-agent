@@ -4,7 +4,7 @@ import { ES256KSigner } from "did-jwt";
 import { base64ToBytes, resolveAlgorithm } from "./util.js";
 
 
-export async function issueCredential(jwk, issuerDid, kid, subjectDid) {
+export async function issueCredential(jwk, kid, issuerDid, subjectDid) {
   const now = new Date();
 
   // valid from 0 seconds from now

@@ -149,8 +149,6 @@ def main_issue():
                     vc_token = f.read().rstrip()
                 vc_tokens += [vc_token]
 
-            # import pdb; pdb.set_trace()
-
             endpoint = "issue-vp/"
             resp = requests.get(create_url(SERVICE_ADDRESS, endpoint), json={
                 "signer": {

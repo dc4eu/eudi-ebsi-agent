@@ -174,7 +174,8 @@ python api-client.py issue vc \
     --key issuer.jwk  \
     --kid foo \
     --issuer $(cat .storage/issuer.did) \
-    --subject $(cat .storage/holder.did)
+    --subject $(cat .storage/holder.did) \
+    --out vc-1.jwt
 ```
 
 #### VC verification

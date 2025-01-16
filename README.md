@@ -98,7 +98,21 @@ GET /issue-vc
 
 ### VC verification
 
-TODO
+```
+GET /verify-vc
+
+{
+  "token": ...
+}
+```
+
+```
+{
+  "result": {
+    ...
+  }
+}
+```
 
 ### VP issuance
 

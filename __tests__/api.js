@@ -3,6 +3,8 @@ import { resolveAlgorithm } from "../app/util";
 import supertest from "supertest";
 import { decodeJWT } from "did-jwt";
 import { importJWK, jwtVerify } from "jose";
+import fs from "fs";
+import path from "path";
 
 const client = supertest(server)
 
@@ -339,6 +341,41 @@ describe("VC issuance endpoint - errors", () => {
     expect(res.status).toEqual(400);
     expect(res.body).toEqual({
       "error": "Only secp256k1 keys are allowed to issue!"
+    });
+  });
+});
+
+
+describe("VC verification endpoint - success", () => {
+  it.each([
+    "./fixtures/vc.jwt",
+  ])("GET /verify-vc: 200 - verify VC: %s", async (vc_file) => {
+    const token = fs.readFileSync(path.join(__dirname, vc_file), {
+      encoding: "utf-8", flag: "r"
+    });
+    const res = await client
+      .get("/verify-vc")
+      .set("Content-Type", "application/json")
+      .send({
+        token
+      });
+    expect(res.status).toEqual(200);
+    expect(res.body.result).toEqual(require("./fixtures/vc.retrieved.json"));
+  });
+});
+
+
+describe("VC verification endpoint - errors", () => {
+  //TODO: Add test for verification failure
+  it("GET /verify-vc: 400 - Missing VC token", async () => {
+    const res = await client
+      .get("/verify-vc")
+      .set("Content-Type", "application/json")
+      .send({
+      });
+    expect(res.status).toEqual(400);
+    expect(res.body).toEqual({
+      "error": "Malformed request: No VC token provided"
     });
   });
 });

@@ -350,9 +350,10 @@ describe("VC verification endpoint - success", () => {
   it.each([
     "./fixtures/vc.jwt",
   ])("GET /verify-vc: 200 - verify VC: %s", async (vc_file) => {
-    const token = fs.readFileSync(path.join(__dirname, vc_file), {
+    let token = fs.readFileSync(path.join(__dirname, vc_file), {
       encoding: "utf-8", flag: "r"
     });
+    token = token.replace(/(\r\n|\n|\r)/g, "");  // Take care to remove newline
     const res = await client
       .get("/verify-vc")
       .set("Content-Type", "application/json")

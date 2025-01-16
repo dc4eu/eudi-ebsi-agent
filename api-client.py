@@ -137,7 +137,43 @@ def main_issue():
                     f.write(token)
                 print(f"[+] VC token saved at {vc_path}")
         case "vp":
-            raise NotImplementedError
+            key_path = os.path.join(STORAGE, cli_args.key_file)
+            with open(key_path, "r") as f:
+                jwk = json.load(f)
+
+            # Load VC tokens
+            vc_tokens = []
+            for vc_file in cli_args.credentials:
+                vc_path = os.path.join(STORAGE, vc_file)
+                with open(vc_path, "r") as f:
+                    vc_token = f.read().rstrip()
+                vc_tokens += [vc_token]
+
+            # import pdb; pdb.set_trace()
+
+            endpoint = "issue-vp/"
+            resp = requests.get(create_url(SERVICE_ADDRESS, endpoint), json={
+                "signer": {
+                    "did": cli_args.signer,
+                    "jwk": jwk,
+                    "kid": cli_args.kid,
+                },
+                "holder": {
+                    "did": cli_args.holder
+                },
+                "audience": {
+                    "did": cli_args.audience
+                },
+                "credentials": vc_tokens,
+            })
+            data = resp.json()
+            flush_json(data)
+            if cli_args.outfile and resp.status_code == 200:
+                vp_path = os.path.join(STORAGE, cli_args.outfile)
+                with open(vp_path, "w") as f:
+                    token = data["token"]
+                    f.write(token)
+                print(f"[+] VP token saved at {vp_path}")
         case _:
             print("No action specified")
             sys.exit(1)
@@ -150,7 +186,7 @@ def main_verify():
         case "vc":
             vc_path = os.path.join(STORAGE, cli_args.vc_file)
             with open(vc_path, "r") as f:
-                token = f.read()
+                token = f.read().rstrip()
             endpoint = "verify-vc/"
             resp = requests.get(create_url(SERVICE_ADDRESS, endpoint), json={
                 "token": token
@@ -160,8 +196,8 @@ def main_verify():
             if cli_args.outfile and resp.status_code == 200:
                 vc_path = os.path.join(STORAGE, cli_args.outfile)
                 with open(vc_path, "w") as f:
-                    token = data["result"]
-                    f.write(token)
+                    vc_doc = data["result"]
+                    json.dump(vc_doc, f, indent=4)
                 print(f"[+] VC token saved at {vc_path}")
         case "vp":
             raise NotImplementedError
@@ -245,15 +281,15 @@ def main():
     ### issue vc
     issue_vc = issue_subcommand.add_parser("vc",
                         help="Issue verifiable credential")
-    issue_vc.add_argument("--issuer", type=str, metavar="<DID>",
-                        default="did:ebsi:zxaYaUtb8pvoAtYNWbKcveg",
-                        help="Issuer DID")
     issue_vc.add_argument("--key", type=str, metavar="<FILE>",
                         dest="key_file", required=True,
                         help="Issuer's private JWK")
     issue_vc.add_argument("--kid", type=str, metavar="<KID>",
                         default="CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc",
                         help="Issuer's JWK kid")
+    issue_vc.add_argument("--issuer", type=str, metavar="<DID>",
+                        default="did:ebsi:zxaYaUtb8pvoAtYNWbKcveg",
+                        help="Issuer DID")
     issue_vc.add_argument("--subject", type=str, metavar="<DID>",
                         default="did:ebsi:z25a23eWUxQQzmAgnD9srpMM",
                         help="Subject DID")
@@ -264,7 +300,31 @@ def main():
     ### issue vp
     issue_vp = issue_subcommand.add_parser("vp",
                         help="Issue verifiable presentation")
-    # TODO: Options
+    issue_vp.add_argument("--key", type=str, metavar="<FILE>",
+                        dest="key_file", required=True,
+                        help="Signer's private JWK")
+    issue_vp.add_argument("--kid", type=str, metavar="<KID>",
+                        default="CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc",
+                        help="Signer's JWK kid")
+    issue_vp.add_argument("--signer", type=str, metavar="<DID>",
+                        default="did:ebsi:zxaYaUtb8pvoAtYNWbKcveg",
+                        help="Signer DID")
+    issue_vp.add_argument("--holder", type=str, metavar="<DID>",
+                        default=(
+                            "did:key:zBhBLmYmyihtomRdJJNEKzbPj51o4a3GYFeZoRHSABKUwqdjiQPY2cq3LTGRq3"
+                            "6RhoZRqix1eq4uA433QJayHdTi8sxm8qdbAbnTyg9dsXCjD8NN7Etcr4f55mRhn9T1d3d6"
+                            "Ec6HgtpcUfemb4ZVKSCDaBrBydsrKAB3TKWNXAkgnz1hseeqf8Y"
+                        ),
+                        help="Holder DID")
+    issue_vp.add_argument("--audience", type=str, metavar="<DID>",
+                        default="did:ebsi:zwNAE5xThBpmGJUWAY23kgx",
+                        help="Audience DID")
+    issue_vp.add_argument("--credentials", nargs="+", metavar="<FILES>",
+                        required=True,
+                        help="VC token files")
+    issue_vp.add_argument("--out", type=str, metavar="OUTFILE",
+                        dest="outfile",
+                        help="Save VP inside .storage")
 
     # verify
     verify = commands.add_parser("verify", help="Verification actions")

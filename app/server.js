@@ -3,8 +3,9 @@ import path from "path";
 
 import { generatePrivateJwk } from "./jwk.js";
 import { createDidFromJwk, resolveDid } from "./did.js";
-import { issueCredential } from "./vc.js";
+import { issueCredential, verifyCredential } from "./vc.js";
 import { resolveAlgorithm } from "./util.js";
+import { decodeJWT, verifyJWT, } from "did-jwt";
 
 const app = express();
 
@@ -107,6 +108,22 @@ app.get("/issue-vc", async (req, res) => {
 
   const token = await issueCredential(jwk, issuer_did, kid, subject_did);
   res.json({ token });
+});
+
+
+app.get("/verify-vc", async (req, res) => {
+  const body = req.body;
+  if (!body) {
+    return res.status(400).json({ error: "Malformed request: No body" });
+  }
+
+  const { token } = req.body;
+  if (!token) {
+    return res.status(400).json({ error: "Malformed request: No VC token provided" });
+  }
+
+  const result = await verifyCredential(token);
+  res.json( { result });
 });
 
 

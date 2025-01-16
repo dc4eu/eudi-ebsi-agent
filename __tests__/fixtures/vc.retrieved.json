@@ -1,0 +1,48 @@
+{
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1"
+  ],
+  "id": "urn:uuid:7419c109-285a-424d-bb69-0babac6bd444",
+  "type": [
+    "VerifiableCredential",
+    "VerifiableAttestation"
+  ],
+  "issuer": "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg",
+  "issuanceDate": "2024-01-18T08:13:09Z",
+  "issued": "2024-01-18T08:13:09Z",
+  "validFrom": "2024-01-18T08:13:09Z",
+  "credentialSubject": {
+    "id": "did:key:zBhBLmYmyihtomRdJJNEKzbPj51o4a3GYFeZoRHSABKUwqdjiQPY2ee4vcxv7swEthaAwsaUTmm6qWZkGkzBQdFPBkTqXpu5PecktaycU4qa8B7cUi2yVhF1vz2P9d97ZPvAkqG5a7pVVVU6PTSTfP244BtHNkPUV97iqFGdDRTyuLizeuUxQtk",
+    "familyName": "Dubois",
+    "firstName": "Sophie",
+    "dateOfBirth": "1985-05-20",
+    "personalIdentifier": "987654321",
+    "placeOfBirth": {
+      "addressCountry": "BE",
+      "addressRegion": "BRU",
+      "addressLocality": "Brussels"
+    },
+    "currentAddress": {
+      "addressCountry": "BE",
+      "addressRegion": "VBR",
+      "addressLocality": "Leuven",
+      "postalCode": "3000",
+      "streetAddress": "456 Elm Ave",
+      "fullAddress": "456 Elm Ave, Leuven, VBR 3000, Belgium"
+    },
+    "gender": "female",
+    "nationality": [
+      "BE"
+    ],
+    "ageOver18": true
+  },
+  "credentialSchema": {
+    "id": "https://api-pilot.ebsi.eu/trusted-schemas-registry/v3/schemas/zDpWGUBenmqXzurskry9Nsk6vq2R8thh9VSeoRqguoyMD",
+    "type": "FullJsonSchemaValidator2021"
+  },
+  "expirationDate": "2031-11-30T00:00:00Z",
+  "termsOfUse": {
+    "id": "https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers/did:ebsi:zxaYaUtb8pvoAtYNWbKcveg/attributes/b40fd9b404418a44d2d9911377a03130dde450eb546c755b5b80acd782902e6d",
+    "type": "IssuanceCertificate"
+  }
+}

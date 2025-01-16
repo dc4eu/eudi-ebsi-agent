@@ -15,6 +15,8 @@ python api-client.py issue vc \
     --key issuer.jwk  \
     --kid foo \
     --issuer $(cat .storage/issuer.did) \
-    --subject $(cat .storage/holder.did)
+    --subject $(cat .storage/holder.did) \
+    --out vc-1.jwt
 
 # python api-client.py resolve did:ebsi:ziDnioxYYLW1a3qUbqTFz4W
+# python api-client.py verify vc vc-sample.jwt

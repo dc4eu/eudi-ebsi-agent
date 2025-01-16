@@ -1,4 +1,3 @@
-
 """
 CLI client for interacting with the ebsi-onboader API
 """
@@ -134,7 +133,7 @@ def main_issue():
             if cli_args.outfile and resp.status_code == 200:
                 vc_path = os.path.join(STORAGE, cli_args.outfile)
                 with open(vc_path, "w") as f:
-                    token = data["vcJwt"]
+                    token = data["token"]
                     f.write(token)
                 print(f"[+] VC token saved at {vc_path}")
         case "vp":
@@ -149,7 +148,21 @@ def main_verify():
 
     match subcommand:
         case "vc":
-            raise NotImplementedError
+            vc_path = os.path.join(STORAGE, cli_args.vc_file)
+            with open(vc_path, "r") as f:
+                token = f.read()
+            endpoint = "verify-vc/"
+            resp = requests.get(create_url(SERVICE_ADDRESS, endpoint), json={
+                "token": token
+            })
+            data = resp.json()
+            flush_json(data)
+            if cli_args.outfile and resp.status_code == 200:
+                vc_path = os.path.join(STORAGE, cli_args.outfile)
+                with open(vc_path, "w") as f:
+                    token = data["result"]
+                    f.write(token)
+                print(f"[+] VC token saved at {vc_path}")
         case "vp":
             raise NotImplementedError
         case _:
@@ -260,7 +273,11 @@ def main():
     ## verify vc
     verify_vc = verify_subcommand.add_parser("vc",
                         help="verify credential")
-    # TODO: Options
+    verify_vc.add_argument("vc_file", type=str, metavar="<FILE>",
+                         help="VC JWT to verify (must be in .storage)")
+    verify_vc.add_argument("--out", type=str, metavar="OUTFILE",
+                        dest="outfile",
+                        help="Save retrieved VC inside .storage")
 
     ## verify vp
     verify_vp = verify_subcommand.add_parser("vp",

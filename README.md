@@ -98,7 +98,21 @@ GET /issue-vc
 
 ### VC verification
 
-TODO
+```
+GET /verify-vc
+
+{
+  "token": ...
+}
+```
+
+```
+{
+  "result": {
+    ...
+  }
+}
+```
 
 ### VP issuance
 
@@ -165,7 +179,9 @@ python api-client.py issue vc \
 
 #### VC verification
 
-TODO
+```shell
+python api-client.py verify vc vc-sample.jwt
+```
 
 #### VP issuance
 

@@ -92,3 +92,50 @@ export async function issueCredential(jwk, issuer_did, kid, subject_did) {
   };
   return createVerifiableCredentialJwt(vcPayload, issuer, options);
 }
+
+
+export async function verifyCredential(token) {
+  const options = {
+    network: "pilot", // Required: EBSI network ("production", "preprod", "conformance", "pilot", "test")
+    hosts: ["api-pilot.ebsi.eu"], // Required: List of trusted hosts running the EBSI Core Services APIs.
+    // ebsiAuthority: "api-pilot.ebsi.eu", // OPTIONAL; NOTE (GRNET): Enforces did:ebsi:<...> subject DIDs
+    // OPTIONAL. List of trusted services with their respective version number (e.g. "v5").
+    // Only declare this if you need to override the default versions.
+    // services: {
+    //   "did-registry": "v5",
+    //   "trusted-issuers-registry": "v5",
+    //   "trusted-policies-registry": "v3",
+    //   "trusted-schemas-registry": "v3",
+    // },
+    // OPTIONAL. Timeout after which the requests made by the library will fail. Default: 15 seconds
+    // timeout: 15_000,
+    timeout: 200_000,
+    // OPTIONAL. Determines whether the JSON to JWT transformation will remove the original fields from the input payload.
+    // Default: true
+    // removeOriginalFields: true,
+    // OPTIONAL. Determines whether to validate the accreditations of the VC issuer or not.
+    // Validation is active by default.
+    // skipAccreditationsValidation: false,
+    // OPTIONAL. Determines whether to validate the credential status or not.
+    // Validation is active by default.
+    // skipStatusValidation: false,
+    // OPTIONAL. Determines whether to validate the credential subject or not
+    // Validation is active by default.
+    // skipCredentialSubjectValidation: false,
+    // OPTIONAL. Unix timestamp. Optional comparison date. Default: current date and time.
+    // For the JWT to be valid, `nbf` ≤ `validAt` ≤ `exp`.
+    // validAt: 1686048193,
+    // OPTIONAL. Determines whether or not to validate the issuer's accreditations when `termsOfUse` is missing. Default: false
+    // validateAccreditationWithoutTermsOfUse: false,
+    // OPTIONAL. Credential subject. This parameter is mandatory if the payload's `credentialSubject` is an array.
+    // It must correspond to one of the IDs in the payload's `credentialSubject` array.
+    // sub: "did:key:z2dmzD81cgPx8Vki7JbuuMmFYrWPgYoytykUZ3eyqht1j9KbsNgeztBFXEB9FUZCoufTjXiTUZYKkcP36i2XAQCphfxBwvXG4dAaF6pdwhrMGyaLMC81fU5ECMnt4VgMQpwh3sn5vSbUpwoaTBME78noXJaTLgkCv5KkM6VgGTfWUjH8Z2",
+    // OPTIONAL. Enable Ajv verbose mode (default: false)
+    // verbose: false,
+    // OPTIONAL. Extra credentialSchema types. By default, the library only supports "FullJsonSchemaValidator2021" and "JsonSchema".
+    // The library is not responsible for validating these extra types.
+    // extraCredentialSchemaTypes: [],
+  };
+  // return true;
+  return verifyCredentialJwt(token, options);
+}

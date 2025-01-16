@@ -5,6 +5,7 @@ import { generatePrivateJwk } from "./jwk.js";
 import { createDidFromJwk, resolveDid } from "./did.js";
 import { issueCredential, verifyCredential } from "./vc.js";
 import { resolveAlgorithm } from "./util.js";
+import { decodeJWT, verifyJWT, } from "did-jwt";
 
 const app = express();
 

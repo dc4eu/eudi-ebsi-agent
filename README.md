@@ -116,7 +116,34 @@ GET /verify-vc
 
 ### VP issuance
 
-TODO
+```
+GET /issue-vp
+
+{
+  "signer": {
+    "did": ...,
+    "kid": ...,
+    "jwk": {
+      ...
+    }
+  },
+  "holder": {
+    "did": ...
+  },
+  "audience": {
+    "did": ...
+  },
+  credentials: [
+    ...
+  ]
+}
+```
+
+```
+{
+  "token": ...
+}
+```
 
 ### VP verification
 

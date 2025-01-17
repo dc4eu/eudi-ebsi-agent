@@ -142,7 +142,10 @@ app.get("/verify-vc", async (req, res) => {
   }
 
   const result = await verifyCredential(token);
-  res.json( { result });
+  if (result.isValid == false) {
+    return res.status(400).json({ error: result.error })
+  }
+  res.json({ vcDocument: result.vcDocument });
 });
 
 

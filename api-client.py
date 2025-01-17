@@ -194,7 +194,7 @@ def main_verify():
             if cli_args.outfile and resp.status_code == 200:
                 vc_path = os.path.join(STORAGE, cli_args.outfile)
                 with open(vc_path, "w") as f:
-                    vc_doc = data["result"]
+                    vc_doc = data["vcDocument"]
                     json.dump(vc_doc, f, indent=4)
                 print(f"[+] VC token saved at {vc_path}")
         case "vp":

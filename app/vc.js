@@ -136,6 +136,13 @@ export async function verifyCredential(token) {
     // The library is not responsible for validating these extra types.
     // extraCredentialSchemaTypes: [],
   };
-  // return true;
-  return verifyCredentialJwt(token, options);
+  let isValid = false;
+  let vcDocument;
+  try {
+    vcDocument = await verifyCredentialJwt(token, options);
+  } catch (error) {
+    return { isValid, error };
+  }
+  isValid = true;
+  return { isValid, vcDocument };
 }

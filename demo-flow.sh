@@ -46,4 +46,4 @@ python3 api-client.py issue vp \
 
 # TODO: Integrate these action to demo flow when possible
 python3 api-client.py resolve did:ebsi:ziDnioxYYLW1a3qUbqTFz4W
-python3 api-client.py verify vc vc-sample.jwt
+python3 api-client.py verify vc vc-sample.jwt --out vc-sample-document.json

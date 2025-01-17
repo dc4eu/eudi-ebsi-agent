@@ -106,10 +106,23 @@ GET /verify-vc
 }
 ```
 
+**200**
+
 ```
 {
-  "result": {
+  "vcDocument": {
     ...
+  }
+}
+```
+
+**400**
+
+```
+{
+  "error": {
+    "message": ...,
+    "name": ...
   }
 }
 ```
@@ -208,7 +221,7 @@ python api-client.py issue vc \
 #### VC verification
 
 ```shell
-python api-client.py verify vc vc-sample.jwt
+python api-client.py verify vc vc-sample.jwt --out vc-sample-document.json
 ```
 
 #### VP issuance

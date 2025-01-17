@@ -361,13 +361,12 @@ describe("VC verification endpoint - success", () => {
         token
       });
     expect(res.status).toEqual(200);
-    expect(res.body.result).toEqual(require("./fixtures/vc.retrieved.json"));
+    expect(res.body.vcDocument).toEqual(require("./fixtures/vc.retrieved.json"));
   });
 });
 
 
 describe("VC verification endpoint - errors", () => {
-  //TODO: Add test for verification failure
   it("GET /verify-vc: 400 - Missing VC token", async () => {
     const res = await client
       .get("/verify-vc")
@@ -379,6 +378,27 @@ describe("VC verification endpoint - errors", () => {
       "error": "Bad request: No VC token provided"
     });
   });
+  it("GET /verify-vc: 400 - Invalid VC token", async () => {
+    const vc_file = "./fixtures/vc.jwt";
+    let token = fs.readFileSync(path.join(__dirname, vc_file), {
+      encoding: "utf-8", flag: "r"
+    });
+    token = token.replace(/(\r\n|\n|\r)/g, "");  // Take care to remove newline
+    token += "?";   // Tamper signature
+    const res = await client
+      .get("/verify-vc")
+      .set("Content-Type", "application/json")
+      .send({
+        token
+      });
+    expect(res.status).toEqual(400);
+    expect(res.body).toEqual({
+      error: {
+        message: "Unable to decode JWT VC",
+        name: "ValidationError",
+      }
+    });
+  });
 });
 
 
@@ -386,7 +406,6 @@ describe("VP issuance endpoint - success", () => {
   it.each(["secp256k1"])("GET /issue-vp: 200 - issue VP - over: %s", async (alg) => {
     const signerDid = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
     const kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc";
-    const subjectDid = "did:ebsi:z25a23eWUxQQzmAgnD9srpMM";
     const holderDid = "did:key:zBhBLmYmyihtomRdJJNEKzbPj51o4a3GYFeZoRHSABKUwqdjiQPY2cq3LTGRq36RhoZRqix1eq4uA433QJayHdTi8sxm8qdbAbnTyg9dsXCjD8NN7Etcr4f55mRhn9T1d3d6Ec6HgtpcUfemb4ZVKSCDaBrBydsrKAB3TKWNXAkgnz1hseeqf8Y"; // TODO
     const audienceDid = "did:ebsi:zwNAE5xThBpmGJUWAY23kgx";  // TODO
       const vc1 = "eyJhbGciOiJFUzI1NksiLCJ0eXAiOiJKV1QiLCJraWQiOiJkaWQ6ZWJzaTp6eGFZYVV0Yjhwdm9BdFlOV2JLY3ZlZyNDSHhZek9xdDM4U3g2WUJmUFloaUVkZ2N3eldrOXR5N2swTEJhNmg3MG5jIn0.eyJqdGkiOiJ1cm46dXVpZDowMDNhMWRkOC1hNWQyLTQyZWYtODE4Mi1lOTIxYzBhOWYyY2QiLCJzdWIiOiJkaWQ6a2V5OnpCaEJMbVlteWlodG9tUmRKSk5FS3piUGo1MW80YTNHWUZlWm9SSFNBQktVd3FkamlRUFkyY3EzTFRHUnEzNlJob1pScWl4MWVxNHVBNDMzUUpheUhkVGk4c3htOHFkYkFiblR5Zzlkc1hDakQ4Tk43RXRjcjRmNTVtUmhuOVQxZDNkNkVjNkhndHBjVWZlbWI0WlZLU0NEYUJyQnlkc3JLQUIzVEtXTlhBa2duejFoc2VlcWY4WSIsImlzcyI6ImRpZDplYnNpOnp4YVlhVXRiOHB2b0F0WU5XYktjdmVnIiwibmJmIjoxNjM1NzI0ODAwLCJleHAiOjE5NTM3NjMyMDAsImlhdCI6MTU5MjgzNTEwNCwidmMiOnsiQGNvbnRleHQiOlsiaHR0cHM6Ly93d3cudzMub3JnLzIwMTgvY3JlZGVudGlhbHMvdjEiXSwiaWQiOiJ1cm46dXVpZDowMDNhMWRkOC1hNWQyLTQyZWYtODE4Mi1lOTIxYzBhOWYyY2QiLCJ0eXBlIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIiwiVmVyaWZpYWJsZUF0dGVzdGF0aW9uIl0sImlzc3VlciI6ImRpZDplYnNpOnp4YVlhVXRiOHB2b0F0WU5XYktjdmVnIiwiaXNzdWFuY2VEYXRlIjoiMjAyMS0xMS0wMVQwMDowMDowMFoiLCJ2YWxpZEZyb20iOiIyMDIxLTExLTAxVDAwOjAwOjAwWiIsInZhbGlkVW50aWwiOiIyMDUwLTExLTAxVDAwOjAwOjAwWiIsImV4cGlyYXRpb25EYXRlIjoiMjAzMS0xMS0zMFQwMDowMDowMFoiLCJpc3N1ZWQiOiIyMDIwLTA2LTIyVDE0OjExOjQ0WiIsImNyZWRlbnRpYWxTdWJqZWN0Ijp7ImlkIjoiZGlkOmtleTp6QmhCTG1ZbXlpaHRvbVJkSkpORUt6YlBqNTFvNGEzR1lGZVpvUkhTQUJLVXdxZGppUVBZMmNxM0xUR1JxMzZSaG9aUnFpeDFlcTR1QTQzM1FKYXlIZFRpOHN4bThxZGJBYm5UeWc5ZHNYQ2pEOE5ON0V0Y3I0ZjU1bVJobjlUMWQzZDZFYzZIZ3RwY1VmZW1iNFpWS1NDRGFCckJ5ZHNyS0FCM1RLV05YQWtnbnoxaHNlZXFmOFkifSwiY3JlZGVudGlhbFNjaGVtYSI6eyJpZCI6Imh0dHBzOi8vYXBpLXBpbG90LmVic2kuZXUvdHJ1c3RlZC1zY2hlbWFzLXJlZ2lzdHJ5L3YzL3NjaGVtYXMvejNNZ1VGVWtiNzIydXE0eDNkdjV5QUptbk5tekRGZUs1VUM4eDgzUW9lTEpNIiwidHlwZSI6IkZ1bGxKc29uU2NoZW1hVmFsaWRhdG9yMjAyMSJ9LCJ0ZXJtc09mVXNlIjp7ImlkIjoiaHR0cHM6Ly9hcGktcGlsb3QuZWJzaS5ldS90cnVzdGVkLWlzc3VlcnMtcmVnaXN0cnkvdjUvaXNzdWVycy9kaWQ6ZWJzaTp6eGFZYVV0Yjhwdm9BdFlOV2JLY3ZlZy9hdHRyaWJ1dGVzL2I0MGZkOWI0MDQ0MThhNDRkMmQ5OTExMzc3YTAzMTMwZGRlNDUwZWI1NDZjNzU1YjViODBhY2Q3ODI5MDJlNmQiLCJ0eXBlIjoiSXNzdWFuY2VDZXJ0aWZpY2F0ZSJ9fX0.fKCREswG43_862Vr8L3lJORgFNzvMZ2hR7p93gfEkhM-qhIIlSlP0AcAgy0c6qu2_2uAIC7mOGnj9AZ3Au2nLw";

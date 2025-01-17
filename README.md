@@ -160,7 +160,37 @@ GET /issue-vp
 
 ### VP verification
 
-TODO
+```
+GET /verify-vp
+
+{
+  "token": ...
+  "audience": {
+    "did": ...
+  }
+}
+```
+
+**200**
+
+```
+{
+  "vpDocument": {
+    ...
+  }
+}
+```
+
+**400**
+
+```
+{
+  "error": {
+    "message": ...,
+    "name": ...
+  }
+}
+```
 
 ## Reference API Client
 
@@ -221,7 +251,7 @@ python api-client.py issue vc \
 #### VC verification
 
 ```shell
-python api-client.py verify vc vc-sample.jwt --out vc-sample-document.json
+python api-client.py verify vc vc-sample.jwt --out vc-sample.json
 ```
 
 #### VP issuance
@@ -239,7 +269,9 @@ python3 api-client.py issue vp \
 
 #### VP verification
 
-TODO
+```shell
+python3 api-client.py verify vp vp-sample.jwt --out vp-sample.json
+```
 
 ## Development
 

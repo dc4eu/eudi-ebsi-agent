@@ -198,7 +198,24 @@ def main_verify():
                     json.dump(vc_doc, f, indent=4)
                 print(f"[+] VC token saved at {vc_path}")
         case "vp":
-            raise NotImplementedError
+            vp_path = os.path.join(STORAGE, cli_args.vp_file)
+            with open(vp_path, "r") as f:
+                token = f.read().rstrip()
+            endpoint = "verify-vp/"
+            resp = requests.get(create_url(SERVICE_ADDRESS, endpoint), json={
+                "token": token,
+                "audience": {
+                    "did": cli_args.audience
+                }
+            })
+            data = resp.json()
+            flush_json(data)
+            if cli_args.outfile and resp.status_code == 200:
+                vp_path = os.path.join(STORAGE, cli_args.outfile)
+                with open(vp_path, "w") as f:
+                    vp_doc = data["vpDocument"]
+                    json.dump(vp_doc, f, indent=4)
+                print(f"[+] VP token saved at {vp_path}")
         case _:
             print("No action specified")
             sys.exit(1)
@@ -340,7 +357,14 @@ def main():
     ## verify vp
     verify_vp = verify_subcommand.add_parser("vp",
                         help="verify presentation")
-    # TODO: Options
+    verify_vp.add_argument("vp_file", type=str, metavar="<FILE>",
+                         help="VP JWT to verify (must be in .storage)")
+    verify_vp.add_argument("--audience", type=str, metavar="<DID>",
+                        default="did:ebsi:zwNAE5xThBpmGJUWAY23kgx",
+                        help="Audience DID")
+    verify_vp.add_argument("--out", type=str, metavar="OUTFILE",
+                        dest="outfile",
+                        help="Save retrieved VP inside .storage")
 
     global SERVICE_ADDRESS, cli_args
     cli_args = parser.parse_args()

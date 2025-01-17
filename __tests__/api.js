@@ -454,3 +454,82 @@ describe("VP issuance endpoint - success", () => {
     ]);
   });
 });
+
+describe("VP verification endpoint - success", () => {
+  it.each([
+    "./fixtures/vp.jwt",
+  ])("GET /verify-vp: 200 - verify VP: %s", async (vp_file) => {
+    const audienceDid = "did:ebsi:zwNAE5xThBpmGJUWAY23kgx";
+    let token = fs.readFileSync(path.join(__dirname, vp_file), {
+      encoding: "utf-8", flag: "r"
+    });
+    token = token.replace(/(\r\n|\n|\r)/g, "");  // Take care to remove newline
+    const res = await client
+      .get("/verify-vp")
+      .set("Content-Type", "application/json")
+      .send({
+        token,
+        audience: {
+          did: audienceDid,
+        }
+      });
+    expect(res.status).toEqual(200); // TODO: Activate
+    expect(res.body.vpDocument).toEqual(require("./fixtures/vp.retrieved.json"));
+  });
+});
+
+
+describe("VP verification endpoint - errors", () => {
+  it("GET /verify-vp: 400 - Missing VP token", async () => {
+    const res = await client
+      .get("/verify-vp")
+      .set("Content-Type", "application/json")
+      .send({
+        audience: {
+          did: "whatever",
+        }
+      });
+    expect(res.status).toEqual(400);
+    expect(res.body).toEqual({
+      "error": "Bad request: No VP token provided"
+    });
+  });
+  it("GET /verify-vp: 400 - Missing audience", async () => {
+    const res = await client
+      .get("/verify-vp")
+      .set("Content-Type", "application/json")
+      .send({
+        token: "whatever"
+      });
+    expect(res.status).toEqual(400);
+    expect(res.body).toEqual({
+      "error": "Bad request: No audience provided"
+    });
+  });
+  it("GET /verify-vp: 400 - Invalid VP token", async () => {
+    const audienceDid = "did:ebsi:zwNAE5xThBpmGJUWAY23kgx";
+    const vp_file = "./fixtures/vp.jwt";
+    let token = fs.readFileSync(path.join(__dirname, vp_file), {
+      encoding: "utf-8", flag: "r"
+    });
+    token = token.replace(/(\r\n|\n|\r)/g, "");  // Take care to remove newline
+    token += "?";   // Tamper signature
+    const res = await client
+      .get("/verify-vp")
+      .set("Content-Type", "application/json")
+      .send({
+        token,
+        audience: {
+          did: audienceDid,
+        }
+      });
+    expect(res.status).toEqual(400);
+    expect(res.body).toEqual({
+      error: {
+        message: "Unable to decode JWT VC",
+        name: "ValidationError",
+      }
+    });
+  });
+});
+

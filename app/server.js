@@ -186,6 +186,28 @@ app.get("/issue-vp", async (req, res) => {
 });
 
 
+app.get("/verify-vp", async (req, res) => {
+  const body = req.body;
+  if (!body) {
+    return res.status(400).json({ error: "Bad request: No body" });
+  }
+
+  const { token, audience } = req.body;
+  if (!token) {
+    return res.status(400).json({ error: "Bad request: No VP token provided" });
+  }
+  if (!audience || !audience.did) {
+    return res.status(400).json({ error: "Bad request: No audience provided" });
+  }
+
+  const result = await verifyPresentation(token, audience.did);
+  if (result.isValid == false) {
+    return res.status(400).json({ error: result.error })
+  }
+  res.json({ vpDocument: result.vpDocument });
+});
+
+
 const hostname = "0.0.0.0";
 const port = process.env.PORT || 1337;
 app.listen(port, hostname, () => {

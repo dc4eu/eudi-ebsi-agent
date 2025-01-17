@@ -116,7 +116,34 @@ GET /verify-vc
 
 ### VP issuance
 
-TODO
+```
+GET /issue-vp
+
+{
+  "signer": {
+    "did": ...,
+    "kid": ...,
+    "jwk": {
+      ...
+    }
+  },
+  "holder": {
+    "did": ...
+  },
+  "audience": {
+    "did": ...
+  },
+  credentials: [
+    ...
+  ]
+}
+```
+
+```
+{
+  "token": ...
+}
+```
 
 ### VP verification
 
@@ -186,7 +213,16 @@ python api-client.py verify vc vc-sample.jwt
 
 #### VP issuance
 
-TODO
+```shell
+python3 api-client.py issue vp \
+    --key signer.jwk  \
+    --kid bar \
+    --signer $(cat .storage/signer.did) \
+    --holder $(cat .storage/holder.did) \
+    --audience $(cat .storage/audience.did) \
+    --credentials vc-1.jwt vc-2.jwt \
+    --out vp.jwt
+```
 
 #### VP verification
 

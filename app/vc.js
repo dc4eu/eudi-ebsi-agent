@@ -4,7 +4,7 @@ import { ES256KSigner } from "did-jwt";
 import { base64ToBytes, resolveAlgorithm } from "./util.js";
 
 
-export async function issueCredential(jwk, issuer_did, kid, subject_did) {
+export async function issueCredential(jwk, kid, issuerDid, subjectDid) {
   const now = new Date();
 
   // valid from 0 seconds from now
@@ -22,7 +22,7 @@ export async function issueCredential(jwk, issuer_did, kid, subject_did) {
     "@context": ["https://www.w3.org/2018/credentials/v1"],
     id: `urn:uuid:${uuidv4()}`,
     type: ["VerifiableCredential", "VerifiableAttestation"],
-    issuer: issuer_did,
+    issuer: issuerDid,
     issuanceDate: now.toISOString(),
     issued: now.toISOString(),
     validFrom: validFrom.toISOString(),
@@ -30,14 +30,14 @@ export async function issueCredential(jwk, issuer_did, kid, subject_did) {
     expirationDate: expirationDate.toISOString(),
     credentialSubject: {
       // NOTE (GRNET): Must be did:ebsi:<...>due to enabled ebsiAuthority
-      id: subject_did,
+      id: subjectDid,
     },
     credentialSchema: {
       id: "https://api-pilot.ebsi.eu/trusted-schemas-registry/v3/schemas/z3MgUFUkb722uq4x3dv5yAJmnNmzDFeK5UC8x83QoeLJM",
       type: "FullJsonSchemaValidator2021",
     },
     termsOfUse: {
-      id: `https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers/${issuer_did}/attributes/b40fd9b404418a44d2d9911377a03130dde450eb546c755b5b80acd782902e6d`,
+      id: `https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers/${issuerDid}/attributes/b40fd9b404418a44d2d9911377a03130dde450eb546c755b5b80acd782902e6d`,
       type: "IssuanceCertificate",
     },
   };
@@ -85,7 +85,7 @@ export async function issueCredential(jwk, issuer_did, kid, subject_did) {
   // TODO: Resolve signer type per alg
   const signer = ES256KSigner(base64ToBytes(jwk["d"]));
   const issuer = {
-      did: issuer_did,
+      did: issuerDid,
       kid,
       alg: resolveAlgorithm(jwk),
       signer,

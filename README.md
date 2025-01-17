@@ -160,7 +160,37 @@ GET /issue-vp
 
 ### VP verification
 
-TODO
+```
+GET /verify-vp
+
+{
+  "token": ...
+  "audience": {
+    "did": ...
+  }
+}
+```
+
+**200**
+
+```
+{
+  "vpDocument": {
+    ...
+  }
+}
+```
+
+**400**
+
+```
+{
+  "error": {
+    "message": ...,
+    "name": ...
+  }
+}
+```
 
 ## Reference API Client
 

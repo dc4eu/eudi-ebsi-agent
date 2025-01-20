@@ -300,13 +300,13 @@ def main():
                         dest="key_file", required=True,
                         help="Issuer's private JWK")
     issue_vc.add_argument("--kid", type=str, metavar="<KID>",
-                        default="CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc",
+                        required=True,
                         help="Issuer's JWK kid")
     issue_vc.add_argument("--issuer", type=str, metavar="<DID>",
-                        default="did:ebsi:zxaYaUtb8pvoAtYNWbKcveg",
+                        required=True,
                         help="Issuer DID")
     issue_vc.add_argument("--subject", type=str, metavar="<DID>",
-                        default="did:ebsi:z25a23eWUxQQzmAgnD9srpMM",
+                        required=True,
                         help="Subject DID")
     issue_vc.add_argument("--out", type=str, metavar="OUTFILE",
                         dest="outfile",
@@ -319,20 +319,16 @@ def main():
                         dest="key_file", required=True,
                         help="Signer's private JWK")
     issue_vp.add_argument("--kid", type=str, metavar="<KID>",
-                        default="CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc",
+                        required=True,
                         help="Signer's JWK kid")
     issue_vp.add_argument("--signer", type=str, metavar="<DID>",
-                        default="did:ebsi:zxaYaUtb8pvoAtYNWbKcveg",
+                        required=True,
                         help="Signer DID")
     issue_vp.add_argument("--holder", type=str, metavar="<DID>",
-                        default=(
-                            "did:key:zBhBLmYmyihtomRdJJNEKzbPj51o4a3GYFeZoRHSABKUwqdjiQPY2cq3LTGRq3"
-                            "6RhoZRqix1eq4uA433QJayHdTi8sxm8qdbAbnTyg9dsXCjD8NN7Etcr4f55mRhn9T1d3d6"
-                            "Ec6HgtpcUfemb4ZVKSCDaBrBydsrKAB3TKWNXAkgnz1hseeqf8Y"
-                        ),
+                        required=True,
                         help="Holder DID")
     issue_vp.add_argument("--audience", type=str, metavar="<DID>",
-                        default="did:ebsi:zwNAE5xThBpmGJUWAY23kgx",
+                        required=True,
                         help="Audience DID")
     issue_vp.add_argument("--credentials", nargs="+", metavar="<FILES>",
                         required=True,
@@ -360,7 +356,7 @@ def main():
     verify_vp.add_argument("vp_file", type=str, metavar="<FILE>",
                          help="VP JWT to verify (must be in .storage)")
     verify_vp.add_argument("--audience", type=str, metavar="<DID>",
-                        default="did:ebsi:zwNAE5xThBpmGJUWAY23kgx",
+                        required=True,
                         help="Audience DID")
     verify_vp.add_argument("--out", type=str, metavar="OUTFILE",
                         dest="outfile",

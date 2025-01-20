@@ -27,7 +27,7 @@ describe("Service info endpoint", () => {
 });
 
 
-describe("JWK creation endpoint - success", () => {
+describe("JWK creation - success", () => {
   it.each(["rsa", "secp256k1"])(
   "GET /create-key: 200 - create JWK - over: %s", async (alg) => {
     const res = await client
@@ -43,7 +43,7 @@ describe("JWK creation endpoint - success", () => {
   });
 });
 
-describe("JWK creation endpoint - errors", () => {
+describe("JWK creation - errors", () => {
   it("GET /create-key: 400 - No algorithm provided", async () => {
     const res = await client
       .get("/create-key")
@@ -68,7 +68,7 @@ describe("JWK creation endpoint - errors", () => {
 });
 
 
-describe("DID creation endpoint - success", () => {
+describe("DID creation - success", () => {
   const publicJwk = {
     "kty": "EC",
     "crv": "P-256",
@@ -88,7 +88,7 @@ describe("DID creation endpoint - success", () => {
   });
 });
 
-describe("DID creation endpoint - errors", () => {
+describe("DID creation - errors", () => {
   const publicJwk = {
     "kty": "EC",
     "crv": "P-256",
@@ -132,7 +132,7 @@ describe("DID creation endpoint - errors", () => {
 });
 
 
-describe("DID resolution endpoint - success", () => {
+describe("DID resolution - success", () => {
   it("GET /resolve-did: 200 - Resolve onboarded DID", async () => {
     const did  = "did:ebsi:ziDnioxYYLW1a3qUbqTFz4W";
     const res = await client
@@ -148,7 +148,7 @@ describe("DID resolution endpoint - success", () => {
 });
 
 
-describe("DID resolution endpoint - errors", () => {
+describe("DID resolution - errors", () => {
   it("GET /resolve-did: 400 - No DID provided", async () => {
     const res = await client.get("/resolve-did");
     expect(res.status).toEqual(400);
@@ -186,7 +186,7 @@ describe("DID resolution endpoint - errors", () => {
 });
 
 
-describe("VC issuance endpoint - success", () => {
+describe("VC issuance - success", () => {
   it.each(["secp256k1"])("GET /issue-vc: 200 - issue VC - over: %s", async (alg) => {
     const issuerDid = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
     const kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc";
@@ -234,7 +234,7 @@ describe("VC issuance endpoint - success", () => {
 });
 
 
-describe("VC issuance endpoint - errors", () => {
+describe("VC issuance - errors", () => {
   it("GET /issue-vc: 400 - Missing issuer DID", async () => {
     const issuerDid = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
     const kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc";
@@ -353,7 +353,7 @@ describe("VC issuance endpoint - errors", () => {
 });
 
 
-describe("VC verification endpoint - success", () => {
+describe("VC verification - success", () => {
   // TODO
   it.each([
     "./fixtures/vc-1.jwt",
@@ -371,7 +371,7 @@ describe("VC verification endpoint - success", () => {
 });
 
 
-describe("VC verification endpoint - errors", () => {
+describe("VC verification - errors", () => {
   it("GET /verify-vc: 400 - Missing VC token", async () => {
     const res = await client
       .get("/verify-vc")
@@ -403,7 +403,7 @@ describe("VC verification endpoint - errors", () => {
 });
 
 
-describe("VP issuance endpoint - success", () => {
+describe("VP issuance - success", () => {
   it.each(["secp256k1"])("GET /issue-vp: 200 - issue VP - over: %s", async (alg) => {
     const kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc";
     const signerDid   = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
@@ -456,7 +456,241 @@ describe("VP issuance endpoint - success", () => {
   });
 });
 
-describe("VP verification endpoint - success", () => {
+describe("VP issuance - errors", () => {
+  it("GET /issue-vp: 400 - Missing signer DID", async () => {
+    const kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc";
+    const signerDid   = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
+    const holderDid   = "did:ebsi:z21Y3pwhoDsJAzHTHAMV3k4S";
+    const audienceDid = "did:ebsi:zwNAE5xThBpmGJUWAY23kgx";
+    const vc_1 = loadToken("fixtures/vc-1.jwt")
+    const vc_2 = loadToken("fixtures/vc-2.jwt")
+    const jwk = require("./fixtures/jwk-2.json"); // secp256k1
+    const res = await client
+      .get("/issue-vp")
+      .set("Content-Type", "application/json")
+      .send({
+        signer: {
+          // did: signerDid,
+          kid,
+          jwk,
+        },
+        holder: {
+          did: holderDid
+        },
+        audience: {
+          did: audienceDid,
+        },
+        credentials: [
+          vc_1,
+          vc_2,
+        ]
+      });
+    expect(res.status).toEqual(400);
+    expect(res.body).toEqual({
+      "error": "Bad request: No signer provided"
+    });
+  });
+  it("GET /issue-vp: 400 - Missing signer JWK", async () => {
+    const kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc";
+    const signerDid   = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
+    const holderDid   = "did:ebsi:z21Y3pwhoDsJAzHTHAMV3k4S";
+    const audienceDid = "did:ebsi:zwNAE5xThBpmGJUWAY23kgx";
+    const vc_1 = loadToken("fixtures/vc-1.jwt")
+    const vc_2 = loadToken("fixtures/vc-2.jwt")
+    const jwk = require("./fixtures/jwk-2.json"); // secp256k1
+    const res = await client
+      .get("/issue-vp")
+      .set("Content-Type", "application/json")
+      .send({
+        signer: {
+          did: signerDid,
+          kid,
+          // jwk,
+        },
+        holder: {
+          did: holderDid
+        },
+        audience: {
+          did: audienceDid,
+        },
+        credentials: [
+          vc_1,
+          vc_2,
+        ]
+      });
+    expect(res.status).toEqual(400);
+    expect(res.body).toEqual({
+      "error": "Bad request: No signer JWK provided"
+    });
+  });
+  it("GET /issue-vp: 400 - Missing signer kid", async () => {
+    const kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc";
+    const signerDid   = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
+    const holderDid   = "did:ebsi:z21Y3pwhoDsJAzHTHAMV3k4S";
+    const audienceDid = "did:ebsi:zwNAE5xThBpmGJUWAY23kgx";
+    const vc_1 = loadToken("fixtures/vc-1.jwt")
+    const vc_2 = loadToken("fixtures/vc-2.jwt")
+    const jwk = require("./fixtures/jwk-2.json"); // secp256k1
+    const res = await client
+      .get("/issue-vp")
+      .set("Content-Type", "application/json")
+      .send({
+        signer: {
+          did: signerDid,
+          // kid,
+          jwk,
+        },
+        holder: {
+          did: holderDid
+        },
+        audience: {
+          did: audienceDid,
+        },
+        credentials: [
+          vc_1,
+          vc_2,
+        ]
+      });
+    expect(res.status).toEqual(400);
+    expect(res.body).toEqual({
+      "error": "Bad request: No signer kid provided"
+    });
+  });
+  it("GET /issue-vp: 400 - Missing holder DID", async () => {
+    const kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc";
+    const signerDid   = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
+    const holderDid   = "did:ebsi:z21Y3pwhoDsJAzHTHAMV3k4S";
+    const audienceDid = "did:ebsi:zwNAE5xThBpmGJUWAY23kgx";
+    const vc_1 = loadToken("fixtures/vc-1.jwt")
+    const vc_2 = loadToken("fixtures/vc-2.jwt")
+    const jwk = require("./fixtures/jwk-2.json"); // secp256k1
+    const res = await client
+      .get("/issue-vp")
+      .set("Content-Type", "application/json")
+      .send({
+        signer: {
+          did: signerDid,
+          kid,
+          jwk,
+        },
+        holder: {
+          // did: holderDid
+        },
+        audience: {
+          did: audienceDid,
+        },
+        credentials: [
+          vc_1,
+          vc_2,
+        ]
+      });
+    expect(res.status).toEqual(400);
+    expect(res.body).toEqual({
+      "error": "Bad request: No holder provided"
+    });
+  });
+  it("GET /issue-vp: 400 - Missing audience DID", async () => {
+    const kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc";
+    const signerDid   = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
+    const holderDid   = "did:ebsi:z21Y3pwhoDsJAzHTHAMV3k4S";
+    const audienceDid = "did:ebsi:zwNAE5xThBpmGJUWAY23kgx";
+    const vc_1 = loadToken("fixtures/vc-1.jwt")
+    const vc_2 = loadToken("fixtures/vc-2.jwt")
+    const jwk = require("./fixtures/jwk-2.json"); // secp256k1
+    const res = await client
+      .get("/issue-vp")
+      .set("Content-Type", "application/json")
+      .send({
+        signer: {
+          did: signerDid,
+          kid,
+          jwk,
+        },
+        holder: {
+          did: holderDid
+        },
+        audience: {
+          // did: audienceDid,
+        },
+        credentials: [
+          vc_1,
+          vc_2,
+        ]
+      });
+    expect(res.status).toEqual(400);
+    expect(res.body).toEqual({
+      "error": "Bad request: No audience provided"
+    });
+  });
+  it("GET /issue-vp: 400 - Missing credentials", async () => {
+    const kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc";
+    const signerDid   = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
+    const holderDid   = "did:ebsi:z21Y3pwhoDsJAzHTHAMV3k4S";
+    const audienceDid = "did:ebsi:zwNAE5xThBpmGJUWAY23kgx";
+    const vc_1 = loadToken("fixtures/vc-1.jwt")
+    const vc_2 = loadToken("fixtures/vc-2.jwt")
+    const jwk = require("./fixtures/jwk-2.json"); // secp256k1
+    const res = await client
+      .get("/issue-vp")
+      .set("Content-Type", "application/json")
+      .send({
+        signer: {
+          did: signerDid,
+          kid,
+          jwk,
+        },
+        holder: {
+          did: holderDid
+        },
+        audience: {
+          did: audienceDid,
+        },
+        credentials: [
+          // vc_1,
+          // vc_2,
+        ]
+      });
+    expect(res.status).toEqual(400);
+    expect(res.body).toEqual({
+      "error": "Bad request: No VCs provided"
+    });
+  });
+  it("GET /issue-vp: 400 - Unsupported signing algorithm", async () => {
+    const kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc";
+    const signerDid   = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
+    const holderDid   = "did:ebsi:z21Y3pwhoDsJAzHTHAMV3k4S";
+    const audienceDid = "did:ebsi:zwNAE5xThBpmGJUWAY23kgx";
+    const vc_1 = loadToken("fixtures/vc-1.jwt")
+    const vc_2 = loadToken("fixtures/vc-2.jwt")
+    const jwk = require("./fixtures/jwk-1.json"); // rsa
+    const res = await client
+      .get("/issue-vp")
+      .set("Content-Type", "application/json")
+      .send({
+        signer: {
+          did: signerDid,
+          kid,
+          jwk,
+        },
+        holder: {
+          did: holderDid
+        },
+        audience: {
+          did: audienceDid,
+        },
+        credentials: [
+          vc_1,
+          vc_2,
+        ]
+      });
+    expect(res.status).toEqual(400);
+    expect(res.body).toEqual({
+      "error": "Only secp256k1 keys are allowed to sign!"
+    });
+  });
+});
+
+describe("VP verification - success", () => {
   it.each([
     "./fixtures/vp.jwt",
   ])("GET /verify-vp: 200 - verify VP: %s", async (vp_file) => {
@@ -477,7 +711,7 @@ describe("VP verification endpoint - success", () => {
 });
 
 
-describe("VP verification endpoint - errors", () => {
+describe("VP verification - errors", () => {
   it("GET /verify-vp: 400 - Missing VP token", async () => {
     const res = await client
       .get("/verify-vp")

@@ -27,10 +27,6 @@ app.get("/info", async (req, res) => {
 
 
 app.get("/create-key", async (req, res) => {
-  const body = req.body;
-  if (!body) {
-    return res.status(400).json({ error: "Bad request: No body" });
-  }
   const { alg } = req.body;
   if (!alg) {
     return res.status(400).json({ error: "Bad request: No algorithm provided" });
@@ -49,10 +45,6 @@ app.get("/create-key", async (req, res) => {
 
 
 app.get("/create-did", async (req, res) => {
-  const body = req.body;
-  if (!body) {
-    return res.status(400).json({ error: "Bad request: No body" });
-  }
   const { method, publicJwk } = req.body;
 
   if (!method) {
@@ -74,16 +66,18 @@ app.get("/create-did", async (req, res) => {
 
 
 app.get("/resolve-did", async (req, res) => {
-  const body = req.body;
-  if (!body) {
-    return res.status(400).json({ error: "Bad request: No body" });
-  }
-  const { did } = body;
+  const { did } = req.body;
   if (!did) {
     return res.status(400).json({ error: "Bad request: No did provided" });
   }
 
-  const result = await resolveDid(body.did);
+  let result;
+  try {
+    result = await resolveDid(did);
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
+  }
+
   if (!result.didDocument) {
     const error = result.didResolutionMetadata.error;
     switch (error) {
@@ -101,11 +95,6 @@ app.get("/resolve-did", async (req, res) => {
 
 
 app.get("/issue-vc", async (req, res) => {
-  const body = req.body;
-  if (!body) {
-    return res.status(400).json({ error: "Bad request: No body" });
-  }
-
   const { issuer, subject } = req.body;
   if (!issuer || !issuer.did) {
     return res.status(400).json({ error: "Bad request: No issuer provided" });
@@ -113,7 +102,6 @@ app.get("/issue-vc", async (req, res) => {
   if (!subject || !subject.did) {
     return res.status(400).json({ error: "Bad request: No subject provided" });
   }
-
   if (!issuer.jwk) {
     return res.status(400).json({ error: "Bad request: No issuer JWK provided" });
   }
@@ -124,24 +112,29 @@ app.get("/issue-vc", async (req, res) => {
     return res.status(400).json({ error: "Bad request: No issuer kid provided" });
   }
 
-  const token = await issueCredential(issuer.jwk, issuer.kid, issuer.did, subject.did);
+  let token;
+  try {
+    token = await issueCredential(issuer.jwk, issuer.kid, issuer.did, subject.did);
+  } catch (err){
+    return res.status(400).json({ error: err.message });
+  }
 
   res.json({ token });
 });
 
 
 app.get("/verify-vc", async (req, res) => {
-  const body = req.body;
-  if (!body) {
-    return res.status(400).json({ error: "Bad request: No body" });
-  }
-
   const { token } = req.body;
   if (!token) {
     return res.status(400).json({ error: "Bad request: No VC token provided" });
   }
 
-  const result = await verifyCredential(token);
+  let result;
+  try {
+    result = await verifyCredential(token);
+  } catch (err){
+    return res.status(400).json({ error: err.message });
+  }
   if (result.isValid == false) {
     return res.status(400).json({ error: result.error })
   }
@@ -150,11 +143,6 @@ app.get("/verify-vc", async (req, res) => {
 
 
 app.get("/issue-vp", async (req, res) => {
-  const body = req.body;
-  if (!body) {
-    return res.status(400).json({ error: "Bad request: No body" });
-  }
-
   const { signer, holder, audience, credentials } = req.body;
   if (!signer || !signer.did) {
     return res.status(400).json({ error: "Bad request: No signer provided" });
@@ -166,7 +154,7 @@ app.get("/issue-vp", async (req, res) => {
     return res.status(400).json({ error: "Bad request: No audience provided" });
   }
   if (!credentials || credentials.length == 0) {
-    return res.status(400).json({ error: "No VCs provided" });
+    return res.status(400).json({ error: "Bad request: No VCs provided" });
   }
 
   if (!signer.jwk) {
@@ -180,18 +168,18 @@ app.get("/issue-vp", async (req, res) => {
     return res.status(400).json({ error: "Bad request: No signer kid provided" });
   }
 
-  const token = await createPresentation(signer.jwk, signer.kid, signer.did, holder.did,
+  let token;
+  try {
+    token = await createPresentation(signer.jwk, signer.kid, signer.did, holder.did,
                                           audience.did, credentials);
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
+  }
   res.json({ token });
 });
 
 
 app.get("/verify-vp", async (req, res) => {
-  const body = req.body;
-  if (!body) {
-    return res.status(400).json({ error: "Bad request: No body" });
-  }
-
   const { token, audience } = req.body;
   if (!token) {
     return res.status(400).json({ error: "Bad request: No VP token provided" });
@@ -200,7 +188,12 @@ app.get("/verify-vp", async (req, res) => {
     return res.status(400).json({ error: "Bad request: No audience provided" });
   }
 
-  const result = await verifyPresentation(token, audience.did);
+  let result;
+  try {
+    result = await verifyPresentation(token, audience.did);
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
+  }
   if (result.isValid == false) {
     return res.status(400).json({ error: result.error })
   }

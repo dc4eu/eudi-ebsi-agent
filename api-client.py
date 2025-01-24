@@ -122,7 +122,7 @@ def main_issue():
             if cli_args.claims_json:
                 with open(cli_args.claims_json, "r") as f:
                     claims = json.load(f)
-            # Parse individual claims (assumes string key value-pairs)
+            # Parse individual claims (assumes string key-value pairs)
             if cli_args.claims:
                 for pair in cli_args.claims:
                     key, value = pair.split("=")
@@ -395,7 +395,7 @@ def main():
                 cli_args.claims_json or cli_args.claims
             ):
                 parser.error(
-                    "At least one of --claims-json or --claims must is required"
+                    "At least one of --claims-json or --claims is required"
                 )
             main_issue()
         case "verify":

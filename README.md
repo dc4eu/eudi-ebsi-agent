@@ -22,15 +22,15 @@ GET /info
 GET /create-key
 
 {
-  "alg": "rsa" | "secp256k1"
+    "alg": "rsa" | "secp256k1"
 }
 ```
 
 ```
 {
-  "jwk": {
-    ...
-  }
+    "jwk": {
+      ...
+    }
 }
 ```
 
@@ -40,16 +40,16 @@ GET /create-key
 GET /create-did
 
 {
-  "method": "key" | "ebsi",
-  "publicJwk": {
-    ...
-  }
+    "method": "key" | "ebsi",
+    "publicJwk": {
+        ...
+    }
 }
 ```
 
 ```
 {
-  "did": <DID>,
+    "did": <DID>,
 }
 ```
 
@@ -59,15 +59,17 @@ GET /create-did
 GET /resolve-did
 
 {
-  "did": ...
+    "did": ...
 }
 ```
 
+**200**
+
 ```
 {
-  "didDocument": {
-    ...
-  }
+    "didDocument": {
+        ...
+    }
 }
 ```
 
@@ -77,25 +79,26 @@ GET /resolve-did
 GET /issue-vc
 
 {
-  "issuer": {
-    "did": ...,
-    "kid": ...,
-    "jwk": {
-      ...
+    "issuer": {
+        "did": ...,
+        "kid": ...,
+        "jwk": {
+            ...
+        }
+    },
+    "subject": {
+        "did": ...
+    },
+    "claims": {
+        ...
     }
-  },
-  "subject": {
-    "did": ...
-  },
-  "claims": {
-    ...
-  }
 }
 ```
 
+**200**
 ```
 {
-  "token": ...
+    "token": ...
 }
 ```
 
@@ -105,7 +108,7 @@ GET /issue-vc
 GET /verify-vc
 
 {
-  "token": ...
+    "token": ...
 }
 ```
 
@@ -113,9 +116,9 @@ GET /verify-vc
 
 ```
 {
-  "vcDocument": {
-    ...
-  }
+    "vcDocument": {
+        ...
+    }
 }
 ```
 
@@ -123,10 +126,10 @@ GET /verify-vc
 
 ```
 {
-  "error": {
-    "message": ...,
-    "name": ...
-  }
+    "error": {
+        "message": ...,
+        "name": ...
+    }
 }
 ```
 
@@ -136,28 +139,29 @@ GET /verify-vc
 GET /issue-vp
 
 {
-  "signer": {
-    "did": ...,
-    "kid": ...,
-    "jwk": {
-      ...
-    }
-  },
-  "holder": {
-    "did": ...
-  },
-  "audience": {
-    "did": ...
-  },
-  credentials: [
-    ...
-  ]
+    "signer": {
+        "did": ...,
+        "kid": ...,
+        "jwk": {
+            ...
+        }
+    },
+    "holder": {
+        "did": ...
+    },
+    "audience": {
+        "did": ...
+    },
+    credentials: [
+        ...
+    ]
 }
 ```
 
+**200**
 ```
 {
-  "token": ...
+    "token": ...
 }
 ```
 
@@ -167,10 +171,10 @@ GET /issue-vp
 GET /verify-vp
 
 {
-  "token": ...
-  "audience": {
-    "did": ...
-  }
+    "token": ...
+    "audience": {
+        "did": ...
+    }
 }
 ```
 
@@ -178,9 +182,9 @@ GET /verify-vp
 
 ```
 {
-  "vpDocument": {
-    ...
-  }
+    "vpDocument": {
+        ...
+    }
 }
 ```
 
@@ -188,10 +192,10 @@ GET /verify-vp
 
 ```
 {
-  "error": {
-    "message": ...,
-    "name": ...
-  }
+    "error": {
+        "message": ...,
+        "name": ...
+    }
 }
 ```
 

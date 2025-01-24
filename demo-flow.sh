@@ -24,6 +24,7 @@ python3 api-client.py issue vc \
     --kid demo-foo \
     --issuer $(cat .storage/demo-issuer.did) \
     --subject $(cat .storage/demo-holder.did) \
+    --claims-json ".storage/claims-sample.json" \
     --claims "gender=unspecified" \
     --out demo-vc-1.jwt
 
@@ -33,6 +34,7 @@ python3 api-client.py issue vc \
     --kid demo-foo \
     --issuer $(cat .storage/demo-issuer.did) \
     --subject $(cat .storage/demo-holder.did) \
+    --claims-json ".storage/claims-sample.json" \
     --claims "placeOfBirth=Khartoum" \
     --out demo-vc-2.jwt
 

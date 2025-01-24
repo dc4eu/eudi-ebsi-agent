@@ -117,12 +117,16 @@ def main_issue():
             with open(key_path, "r") as f:
                 jwk = json.load(f)
 
-            # Parse individual claims
             claims = {}
-            parsed_claims = cli_args.claims
-            for pair in parsed_claims:
-                key, value = pair.split("=")
-                claims[key] = value
+            # Parse JSON formatted claims
+            if cli_args.claims_json:
+                with open(cli_args.claims_json, "r") as f:
+                    claims = json.load(f)
+            # Parse individual claims (assumes string key value-pairs)
+            if cli_args.claims:
+                for pair in cli_args.claims:
+                    key, value = pair.split("=")
+                    claims[key] = value
 
             endpoint = "issue-vc/"
             resp = requests.get(create_url(SERVICE_ADDRESS, endpoint), json={
@@ -316,9 +320,10 @@ def main():
     issue_vc.add_argument("--subject", type=str, metavar="<DID>",
                         required=True,
                         help="Subject DID")
+    issue_vc.add_argument("--claims-json", type=str, metavar="<FILE>",
+                        help="Pass claims in JSON format")
     issue_vc.add_argument("--claims", nargs="*", metavar="key_1=val_1 key_2=val_2",
-                        required=True,
-                        help="Mannually pass claims (keys and values handled as strings)")
+                        help="Pass claims mannualy (keys and values handled as strings)")
     issue_vc.add_argument("--out", type=str, metavar="OUTFILE",
                         dest="outfile",
                         help="Save VC inside .storage")
@@ -385,6 +390,13 @@ def main():
         case "resolve":
             main_resolve()
         case "issue":
+            # Preliminary check for VC issuance (claims are obligatory)
+            if cli_args.issue_subcommand == "vc" and not (
+                cli_args.claims_json or cli_args.claims
+            ):
+                parser.error(
+                    "At least one of --claims-json or --claims must is required"
+                )
             main_issue()
         case "verify":
             main_verify()

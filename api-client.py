@@ -117,6 +117,13 @@ def main_issue():
             with open(key_path, "r") as f:
                 jwk = json.load(f)
 
+            # Parse individual claims
+            claims = {}
+            parsed_claims = cli_args.claims
+            for pair in parsed_claims:
+                key, value = pair.split("=")
+                claims[key] = value
+
             endpoint = "issue-vc/"
             resp = requests.get(create_url(SERVICE_ADDRESS, endpoint), json={
                 "issuer": {
@@ -126,7 +133,8 @@ def main_issue():
                 },
                 "subject": {
                     "did": cli_args.subject
-                }
+                },
+                "claims": claims,
             })
             data = resp.json()
             flush_json(data)
@@ -308,6 +316,9 @@ def main():
     issue_vc.add_argument("--subject", type=str, metavar="<DID>",
                         required=True,
                         help="Subject DID")
+    issue_vc.add_argument("--claims", nargs="*", metavar="key_1=val_1 key_2=val_2",
+                        required=True,
+                        help="Mannually pass claims (keys and values handled as strings)")
     issue_vc.add_argument("--out", type=str, metavar="OUTFILE",
                         dest="outfile",
                         help="Save VC inside .storage")

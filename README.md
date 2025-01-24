@@ -86,6 +86,9 @@ GET /issue-vc
   },
   "subject": {
     "did": ...
+  },
+  "claims": {
+    ...
   }
 }
 ```

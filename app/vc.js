@@ -59,17 +59,13 @@ export async function issueCredential(jwk, kid, issuerDid, subjectDid, claims) {
         id: "https://api-pilot.ebsi.eu/trusted-schemas-registry/v3/schemas/zDpWGUBenmqXzurskry9Nsk6vq2R8thh9VSeoRqguoyMD",
         type: "FullJsonSchemaValidator2021",
       },
-      termsOfUse: {
-        id: `https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers/${issuerDid}/attributes/b40fd9b404418a44d2d9911377a03130dde450eb546c755b5b80acd782902e6d`,
-        type: "IssuanceCertificate",
-      },
   };
   const options = {
     // OPTIONAL. Determines whether to validate the Verifiable Credential payload or not.
     // Validation is active by default.
     // NOTE: even when skipValidation is set to true, the payload must be a valid EBSI Verifiable Attestation.
     // NOTE (GRNET): We deactivate this so that we can work with non-onboarded issuer DIDs
-    skipValidation: true,
+    // skipValidation: true,
     // OPTIONAL. Timeout after which the requests made by the library will fail. Default: 15 seconds
     timeout: 15_000,
     // OPTIONAL. Determines whether to validate the accreditations of the VC issuer or not.
@@ -98,7 +94,7 @@ export async function issueCredential(jwk, kid, issuerDid, subjectDid, claims) {
   const signer = ES256KSigner(base64ToBytes(jwk["d"]));
   const issuer = {
       did: issuerDid,
-      kid,
+      kid: `${issuerDid}#${kid}`,
       alg: resolveAlgorithm(jwk),
       signer,
   };

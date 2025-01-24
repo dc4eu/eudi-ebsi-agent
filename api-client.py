@@ -210,7 +210,7 @@ def main_verify():
                 with open(vc_path, "w") as f:
                     vc_doc = data["vcDocument"]
                     json.dump(vc_doc, f, indent=4)
-                print(f"[+] VC token saved at {vc_path}")
+                print(f"[+] VC document saved at {vc_path}")
         case "vp":
             vp_path = os.path.join(STORAGE, cli_args.vp_file)
             with open(vp_path, "r") as f:

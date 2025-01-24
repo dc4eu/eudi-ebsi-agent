@@ -1,56 +1,45 @@
 #!/bin/bash
+#
+# The private keys ./vaut/grnet-*.jwk corresponding to the DIDs used below are
+# owned by GRNET; contact fmerg@grnet.gr to get them and be able to run this
+# demo locally
 
 source .env/bin/activate
 
-# Setup issuer identity
-python3 api-client.py create key --alg secp256k1 --out demo-issuer.jwk
-python3 api-client.py create did --key demo-issuer.jwk --method ebsi --out demo-issuer.did
-
-# Setup signer identity (normally the same as holder)
-python3 api-client.py create key --alg secp256k1 --out demo-signer.jwk
-python3 api-client.py create did --key demo-signer.jwk --method ebsi --out demo-signer.did
-
-# Setup holder identity
-python3 api-client.py create key --alg secp256k1 --out demo-holder.jwk
-python3 api-client.py create did --key demo-holder.jwk --method ebsi --out demo-holder.did
-
-# Setup audience identity
-python3 api-client.py create key --alg secp256k1 --out demo-audience.jwk
-python3 api-client.py create did --key demo-audience.jwk --method ebsi --out demo-audience.did
-
 # Issue 1st credential
 python3 api-client.py issue vc \
-    --key demo-issuer.jwk  \
-    --kid demo-foo \
-    --issuer $(cat .storage/demo-issuer.did) \
-    --subject $(cat .storage/demo-holder.did) \
+    --key grnet-issuer.jwk  \
+    --kid lmvb8kK8r_Vu0FKVjyoirL5DC_7hVoTfI7wfxpkSUQY \
+    --issuer $(<.storage/grnet-issuer.did) \
+    --subject $(<.storage/grnet-holder.did) \
     --claims-json ".storage/claims-sample.json" \
     --claims "gender=unspecified" \
     --out demo-vc-1.jwt
 
 # Issue 2nd credential
 python3 api-client.py issue vc \
-    --key demo-issuer.jwk  \
-    --kid demo-foo \
-    --issuer $(cat .storage/demo-issuer.did) \
-    --subject $(cat .storage/demo-holder.did) \
+    --key grnet-issuer.jwk  \
+    --kid lmvb8kK8r_Vu0FKVjyoirL5DC_7hVoTfI7wfxpkSUQY \
+    --issuer $(<.storage/grnet-issuer.did) \
+    --subject $(<.storage/grnet-holder.did) \
     --claims-json ".storage/claims-sample.json" \
     --claims "placeOfBirth=Khartoum" \
     --out demo-vc-2.jwt
 
+# Verify credentials separately
+python3 api-client.py verify vc demo-vc-1.jwt --out demo-vc-1.json
+python3 api-client.py verify vc demo-vc-2.jwt --out demo-vc-2.json
+
 # Create verifiable presentation containing the above credentials
 python3 api-client.py issue vp \
-    --key demo-signer.jwk  \
-    --kid demo-bar \
-    --signer $(cat .storage/demo-signer.did) \
-    --holder $(cat .storage/demo-holder.did) \
-    --audience $(cat .storage/demo-audience.did) \
+    --key grnet-holder.jwk  \
+    --kid lk4lfYkT9imHJKH-cCqpX_qf6FZiP5RT48uuPfJLU9Y \
+    --signer $(<.storage/grnet-holder.did) \
+    --holder $(<.storage/grnet-holder.did) \
+    --audience $(<.storage/grnet-audience.did) \
     --credentials demo-vc-1.jwt demo-vc-2.jwt \
     --out demo-vp.jwt
 
-# TODO: Integrate these actions to demo flow when possible
-python3 api-client.py resolve $(cat .storage/onboarded-sample.did)
-python3 api-client.py verify vc vc-sample.jwt --out vc-sample.json
-python3 api-client.py verify vp vp-sample.jwt \
-    --audience "did:ebsi:zwNAE5xThBpmGJUWAY23kgx" \
-    --out vp-sample.json    # TODO: Fix
+# Verify presentation
+python3 api-client.py verify vp demo-vp.jwt \
+    --audience $(<.storage/grnet-audience.did) \

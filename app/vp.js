@@ -39,7 +39,7 @@ export async function createPresentation(jwk, kid, signerDid, holderDid, audienc
     // Validation is active by default.
     // NOTE: even when skipValidation is set to true, the payload must be a valid EBSI Verifiable Attestation.
     // NOTE (GRNET): We deactivate this so that we can work with non-onboarded issuer DIDs
-    skipValidation: true,
+    // skipValidation: true,
     // OPTIONAL. List of trusted services with their respective version number (e.g. "v5").
     // Only declare this if you need to override the default versions.
     // services: {
@@ -49,7 +49,7 @@ export async function createPresentation(jwk, kid, signerDid, holderDid, audienc
     //   "trusted-schemas-registry": "v3",
     // },
     // OPTIONAL. Timeout after which the requests made by the library will fail. Default: 15 seconds
-    // timeout: 15_000,
+    timeout: 15_000,
     // OPTIONAL. Determines whether to validate the accreditations of the VC issuer or not.
     // Validation is active by default.
     // skipAccreditationsValidation: false,
@@ -73,7 +73,7 @@ export async function createPresentation(jwk, kid, signerDid, holderDid, audienc
 
   const signer = {
       did: signerDid,
-      kid,
+      kid: `${signerDid}#${kid}`,
       alg: resolveAlgorithm(jwk),
       signer: ES256KSigner(base64ToBytes(jwk["d"])),
   };

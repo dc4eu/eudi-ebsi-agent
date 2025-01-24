@@ -86,6 +86,9 @@ GET /issue-vc
   },
   "subject": {
     "did": ...
+  },
+  "claims": {
+    ...
   }
 }
 ```
@@ -245,6 +248,8 @@ python api-client.py issue vc \
     --kid foo \
     --issuer $(cat .storage/issuer.did) \
     --subject $(cat .storage/holder.did) \
+    --claims-json ".storage/claims-sample.json" \
+    --claims "gender=unspecified" \
     --out vc-1.jwt
 ```
 

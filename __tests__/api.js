@@ -192,6 +192,17 @@ describe("VC issuance - success", () => {
     const kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc";
     const subjectDid = "did:ebsi:z25a23eWUxQQzmAgnD9srpMM";
     const jwk = require("./fixtures/jwk-2.json"); // secp256k1
+    const claims = {
+      firstName: "Yahya",
+      familyName: "Sinwar",
+      dateOfBirth: "1962-10-29",
+      personalIdentifier: "666999",
+      placeOfBirth: {
+        addressLocality: "Khan Yunis",
+      },
+      gender: "unspecified",
+      ageOver18: true,
+    };
     const res = await client
       .get("/issue-vc")
       .set("Content-Type", "application/json")
@@ -203,7 +214,8 @@ describe("VC issuance - success", () => {
         },
         subject: {
           did: subjectDid
-        }
+        },
+        claims,
       });
     expect(res.status).toEqual(200);
     const { token } = res.body;
@@ -229,7 +241,9 @@ describe("VC issuance - success", () => {
     expect(vc.validUntil).toMatch(after10Years.toISOString().split("T")[0]);   // 10 years after current date
     expect(vc.expirationDate).toMatch(after5Years.toISOString().split("T")[0]);   // 5 years after current date
     expect(vc.issued).toMatch(new Date().toISOString().split("T")[0]);   // Current date
-    expect(vc.credentialSubject.id).toEqual(subjectDid);
+    expect(vc.credentialSubject).toEqual({
+      id: subjectDid, ...claims
+    });
   });
 });
 
@@ -240,6 +254,7 @@ describe("VC issuance - errors", () => {
     const kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc";
     const subjectDid = "did:ebsi:z25a23eWUxQQzmAgnD9srpMM";
     const jwk = require("./fixtures/jwk-2.json"); // secp256k1
+    const claims = { a: 0, b: 1 };
     const res = await client
       .get("/issue-vc")
       .set("Content-Type", "application/json")
@@ -251,7 +266,8 @@ describe("VC issuance - errors", () => {
         },
         subject: {
           did: subjectDid
-        }
+        },
+        claims,
       });
     expect(res.status).toEqual(400);
     expect(res.body).toEqual({
@@ -263,6 +279,7 @@ describe("VC issuance - errors", () => {
     const kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc";
     const subjectDid = "did:ebsi:z25a23eWUxQQzmAgnD9srpMM";
     const jwk = require("./fixtures/jwk-2.json"); // secp256k1
+    const claims = { a: 0, b: 1 };
     const res = await client
       .get("/issue-vc")
       .set("Content-Type", "application/json")
@@ -274,7 +291,8 @@ describe("VC issuance - errors", () => {
         },
         subject: {
           did: subjectDid
-        }
+        },
+        claims,
       });
     expect(res.status).toEqual(400);
     expect(res.body).toEqual({
@@ -286,6 +304,7 @@ describe("VC issuance - errors", () => {
     const kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc";
     const subjectDid = "did:ebsi:z25a23eWUxQQzmAgnD9srpMM";
     const jwk = require("./fixtures/jwk-2.json"); // secp256k1
+    const claims = { a: 0, b: 1 };
     const res = await client
       .get("/issue-vc")
       .set("Content-Type", "application/json")
@@ -297,7 +316,8 @@ describe("VC issuance - errors", () => {
         },
         subject: {
           did: subjectDid
-        }
+        },
+        claims,
       });
     expect(res.status).toEqual(400);
     expect(res.body).toEqual({
@@ -309,6 +329,7 @@ describe("VC issuance - errors", () => {
     const kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc";
     const subjectDid = "did:ebsi:z25a23eWUxQQzmAgnD9srpMM";
     const jwk = require("./fixtures/jwk-2.json"); // secp256k1
+    const claims = { a: 0, b: 1 };
     const res = await client
       .get("/issue-vc")
       .set("Content-Type", "application/json")
@@ -320,11 +341,37 @@ describe("VC issuance - errors", () => {
         },
         subject: {
           // did: subjectDid
-        }
+        },
+        claims,
       });
     expect(res.status).toEqual(400);
     expect(res.body).toEqual({
       "error": "Bad request: No subject provided"
+    });
+  });
+  it("GET /issue-vc: 400 - Missing claims", async () => {
+    const issuerDid = "did:ebsi:zxaYaUtb8pvoAtYNWbKcveg";
+    const kid = "CHxYzOqt38Sx6YBfPYhiEdgcwzWk9ty7k0LBa6h70nc";
+    const subjectDid = "did:ebsi:z25a23eWUxQQzmAgnD9srpMM";
+    const jwk = require("./fixtures/jwk-2.json"); // secp256k1
+    const claims = { a: 0, b: 1 };
+    const res = await client
+      .get("/issue-vc")
+      .set("Content-Type", "application/json")
+      .send({
+        issuer: {
+          did: issuerDid,
+          kid,
+          jwk,
+        },
+        subject: {
+          did: subjectDid
+        },
+        // claims,
+      });
+    expect(res.status).toEqual(400);
+    expect(res.body).toEqual({
+      "error": "Bad request: No claims provided"
     });
   });
   it("GET /issue-vc: 400 - Unsupported signing algorithm", async () => {

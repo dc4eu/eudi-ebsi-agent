@@ -4,7 +4,7 @@ import { ES256KSigner } from "did-jwt";
 import { base64ToBytes, resolveAlgorithm } from "./util.js";
 
 
-export async function issueCredential(jwk, kid, issuerDid, subjectDid) {
+export async function issueCredential(jwk, kid, issuerDid, subjectDid, claims) {
   const now = new Date();
 
   // valid from 0 seconds from now
@@ -31,6 +31,7 @@ export async function issueCredential(jwk, kid, issuerDid, subjectDid) {
     credentialSubject: {
       // NOTE (GRNET): Must be did:ebsi:<...>due to enabled ebsiAuthority
       id: subjectDid,
+      ...claims,
     },
     credentialSchema: {
       id: "https://api-pilot.ebsi.eu/trusted-schemas-registry/v3/schemas/z3MgUFUkb722uq4x3dv5yAJmnNmzDFeK5UC8x83QoeLJM",

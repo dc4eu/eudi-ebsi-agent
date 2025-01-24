@@ -95,7 +95,7 @@ app.get("/resolve-did", async (req, res) => {
 
 
 app.get("/issue-vc", async (req, res) => {
-  const { issuer, subject } = req.body;
+  const { issuer, subject, claims } = req.body;
   if (!issuer || !issuer.did) {
     return res.status(400).json({ error: "Bad request: No issuer provided" });
   }
@@ -111,10 +111,14 @@ app.get("/issue-vc", async (req, res) => {
   if (!issuer.kid) {
     return res.status(400).json({ error: "Bad request: No issuer kid provided" });
   }
+  if (!claims) {
+    return res.status(400).json({ error: "Bad request: No claims provided" });
+  }
 
   let token;
   try {
-    token = await issueCredential(issuer.jwk, issuer.kid, issuer.did, subject.did);
+    token = await issueCredential(issuer.jwk, issuer.kid, issuer.did, subject.did,
+                                  claims);
   } catch (err){
     return res.status(400).json({ error: err.message });
   }

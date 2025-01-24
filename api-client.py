@@ -12,7 +12,9 @@ from sys import stdout
 
 import requests
 
-STORAGE =  ".storage"
+STORAGE =  ".storage"   # Storage for DIDs, tokens and documents
+VAULT   =  ".vault"     # Key storage
+
 SERVICE_ADDRESS = None
 cli_args = None
 
@@ -82,7 +84,7 @@ def main_create():
             data = resp.json()
             flush_json(data)
             if cli_args.outfile and resp.status_code == 200:
-                key_path = os.path.join(STORAGE, cli_args.outfile)
+                key_path = os.path.join(VAULT, cli_args.outfile)
                 with open(key_path, "w") as f:
                     jwk = data["jwk"]
                     json.dump(jwk, f, indent=4)
@@ -91,7 +93,7 @@ def main_create():
             method = cli_args.method
             endpoint = "create-did/"
             options = {"method": method}
-            key_path = os.path.join(STORAGE, cli_args.key_file)
+            key_path = os.path.join(VAULT, cli_args.key_file)
             options["publicJwk"] = load_public_jwk(key_path)
             resp = requests.get(create_url(SERVICE_ADDRESS, endpoint),
                                 json=options)
@@ -113,7 +115,7 @@ def main_issue():
 
     match subcommand:
         case "vc":
-            key_path = os.path.join(STORAGE, cli_args.key_file)
+            key_path = os.path.join(VAULT, cli_args.key_file)
             with open(key_path, "r") as f:
                 jwk = json.load(f)
 
@@ -149,7 +151,7 @@ def main_issue():
                     f.write(token)
                 print(f"[+] VC token saved at {vc_path}")
         case "vp":
-            key_path = os.path.join(STORAGE, cli_args.key_file)
+            key_path = os.path.join(VAULT, cli_args.key_file)
             with open(key_path, "r") as f:
                 jwk = json.load(f)
 
@@ -279,14 +281,14 @@ def main():
                         default="secp256k1", help="Underlying cryptosystem")
     create_key.add_argument("--out", type=str, metavar="OUTFILE",
                         dest="outfile",
-                        help="Save key inside .storage")
+                        help="Save key inside .vault")
 
     ### create did
     create_did = create_subcommand.add_parser("did",
                         help="Create DID")
     create_did.add_argument("--key", type=str, metavar="FILE",
                         required=True, dest="key_file",
-                        help="Key to use from .storage")
+                        help="Key to use from .vault")
     create_did.add_argument("--method", type=str, metavar="METHOD",
                         choices=["key", "ebsi"],
                         default="ebsi", help="DID method")

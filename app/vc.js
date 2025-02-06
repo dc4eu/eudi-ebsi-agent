@@ -4,6 +4,28 @@ import { ES256KSigner } from "did-jwt";
 import { base64ToBytes, resolveAlgorithm } from "./util.js";
 
 
+const config = {
+    // List of trusted hosts
+    hosts: ["api-pilot.ebsi.eu"],
+    // Defines the URI scheme
+    scheme: "ebsi",
+    // Defines the network config
+    network: {
+      // Network component, as it appears in the URI
+      name: "pilot",
+      // Whether the network component is optional or not
+      isOptional: false,
+    },
+    // The list of the supported services (with their version number)
+    services: {
+      "did-registry": "v5",
+      "trusted-issuers-registry": "v5",
+      "trusted-policies-registry": "v3",
+      "trusted-schemas-registry": "v3",
+    },
+}
+
+
 export async function issueCredential(jwk, kid, issuerDid, subjectDid, claims) {
   const now = new Date();
 
@@ -19,48 +41,37 @@ export async function issueCredential(jwk, kid, issuerDid, subjectDid, claims) {
   expirationDate.setFullYear(now.getFullYear() + 5);
 
   const vcPayload = {
-    "@context": ["https://www.w3.org/2018/credentials/v1"],
-    id: `urn:uuid:${uuidv4()}`,
-    type: ["VerifiableCredential", "VerifiableAttestation"],
-    issuer: issuerDid,
-    issuanceDate: now.toISOString(),
-    issued: now.toISOString(),
-    validFrom: validFrom.toISOString(),
-    validUntil: validUntil.toISOString(),
-    expirationDate: expirationDate.toISOString(),
-    credentialSubject: {
-      // NOTE (GRNET): Must be did:ebsi:<...>due to enabled ebsiAuthority
-      id: subjectDid,
-      ...claims,
-    },
-    credentialSchema: {
-      id: "https://api-pilot.ebsi.eu/trusted-schemas-registry/v3/schemas/z3MgUFUkb722uq4x3dv5yAJmnNmzDFeK5UC8x83QoeLJM",
-      type: "FullJsonSchemaValidator2021",
-    },
-    termsOfUse: {
-      id: `https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers/${issuerDid}/attributes/b40fd9b404418a44d2d9911377a03130dde450eb546c755b5b80acd782902e6d`,
-      type: "IssuanceCertificate",
-    },
+      "@context": ["https://www.w3.org/2018/credentials/v1"],
+      id: `urn:uuid:${uuidv4()}`,
+      type: ["VerifiableCredential", "VerifiableAttestation"],
+      issuer: issuerDid,
+      issuanceDate: now.toISOString(),
+      issued: now.toISOString(),
+      validFrom: validFrom.toISOString(),
+      validUntil: validUntil.toISOString(),
+      expirationDate: expirationDate.toISOString(),
+      credentialSubject: {
+        // NOTE (GRNET): Must be did:ebsi:<...>due to enabled ebsiAuthority
+        id: subjectDid,
+        ...claims,
+      },
+      credentialSchema: {
+        id: "https://api-pilot.ebsi.eu/trusted-schemas-registry/v3/schemas/zDpWGUBenmqXzurskry9Nsk6vq2R8thh9VSeoRqguoyMD",
+        type: "FullJsonSchemaValidator2021",
+      },
+      termsOfUse: {
+        id: `https://api-pilot.ebsi.eu/trusted-issuers-registry/v5/issuers/${issuerDid}/attributes/b40fd9b404418a44d2d9911377a03130dde450eb546c755b5b80acd782902e6d`,
+        type: "IssuanceCertificate",
+      },
   };
   const options = {
-    network: "pilot", // Required: EBSI network
-    hosts: ["api-pilot.ebsi.eu"], // Required: List of trusted hosts running the EBSI Core Services APIs.
-    ebsiAuthority: "api-pilot.ebsi.eu", // OPTIONAL; NOTE (GRNET): Enforces did:ebsi:<...> subject DIDs
     // OPTIONAL. Determines whether to validate the Verifiable Credential payload or not.
     // Validation is active by default.
     // NOTE: even when skipValidation is set to true, the payload must be a valid EBSI Verifiable Attestation.
     // NOTE (GRNET): We deactivate this so that we can work with non-onboarded issuer DIDs
     skipValidation: true,
-    // OPTIONAL. List of trusted services with their respective version number (e.g. "v5").
-    // Only declare this if you need to override the default versions.
-    // services: {
-    //   "did-registry": "v5",
-    //   "trusted-issuers-registry": "v5",
-    //   "trusted-policies-registry": "v3",
-    //   "trusted-schemas-registry": "v3",
-    // },
     // OPTIONAL. Timeout after which the requests made by the library will fail. Default: 15 seconds
-    // timeout: 15_000,
+    timeout: 15_000,
     // OPTIONAL. Determines whether to validate the accreditations of the VC issuer or not.
     // Validation is active by default.
     // skipAccreditationsValidation: false,
@@ -91,14 +102,12 @@ export async function issueCredential(jwk, kid, issuerDid, subjectDid, claims) {
       alg: resolveAlgorithm(jwk),
       signer,
   };
-  return createVerifiableCredentialJwt(vcPayload, issuer, options);
+  return createVerifiableCredentialJwt(vcPayload, issuer, config, options);
 }
 
 
 export async function verifyCredential(token) {
   const options = {
-    network: "pilot", // Required: EBSI network ("production", "preprod", "conformance", "pilot", "test")
-    hosts: ["api-pilot.ebsi.eu"], // Required: List of trusted hosts running the EBSI Core Services APIs.
     // ebsiAuthority: "api-pilot.ebsi.eu", // OPTIONAL; NOTE (GRNET): Enforces did:ebsi:<...> subject DIDs
     // OPTIONAL. List of trusted services with their respective version number (e.g. "v5").
     // Only declare this if you need to override the default versions.
@@ -140,9 +149,9 @@ export async function verifyCredential(token) {
   let isValid = false;
   let vcDocument;
   try {
-    vcDocument = await verifyCredentialJwt(token, options);
+      vcDocument = await verifyCredentialJwt(token, config, options);
   } catch (error) {
-    return { isValid, error };
+      return { isValid, error };
   }
   isValid = true;
   return { isValid, vcDocument };

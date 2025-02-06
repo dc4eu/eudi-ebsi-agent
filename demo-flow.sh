@@ -53,4 +53,4 @@ python3 api-client.py resolve $(cat .storage/onboarded-sample.did)
 python3 api-client.py verify vc vc-sample.jwt --out vc-sample.json
 python3 api-client.py verify vp vp-sample.jwt \
     --audience "did:ebsi:zwNAE5xThBpmGJUWAY23kgx" \
-    --out vp-sample.json
+    --out vp-sample.json    # TODO: Fix

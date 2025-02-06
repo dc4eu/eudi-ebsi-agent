@@ -4,18 +4,37 @@ import { ES256KSigner } from "did-jwt";
 import { base64ToBytes, resolveAlgorithm } from "./util.js";
 
 
+const config = {
+    // List of trusted hosts
+    hosts: ["api-pilot.ebsi.eu"],
+    // Defines the URI scheme
+    scheme: "ebsi",
+    // Defines the network config
+    network: {
+      // Network component, as it appears in the URI
+      name: "pilot",
+      // Whether the network component is optional or not
+      isOptional: false,
+    },
+    // The list of the supported services (with their version number)
+    services: {
+      "did-registry": "v5",
+      "trusted-issuers-registry": "v5",
+      "trusted-policies-registry": "v3",
+      "trusted-schemas-registry": "v3",
+    },
+};
+
+
 export async function createPresentation(jwk, kid, signerDid, holderDid, audienceDid, credentials) {
   const vpPayload = {
-    "@context": ["https://www.w3.org/2018/credentials/v1"],
-    id: `urn:uuid:${uuidv4()}`,
-    type: ["VerifiablePresentation"],
-    holder: holderDid,
-    verifiableCredential: credentials,
+      "@context": ["https://www.w3.org/2018/credentials/v1"],
+      id: `urn:uuid:${uuidv4()}`,
+      type: ["VerifiablePresentation"],
+      holder: holderDid,
+      verifiableCredential: credentials,
   };
   const options = {
-    network: "pilot", // Required: EBSI network
-    hosts: ["api-pilot.ebsi.eu"], // Required: List of trusted hosts running the EBSI Core Services APIs.
-    ebsiAuthority: "api-pilot.ebsi.eu", // OPTIONAL; NOTE (GRNET): Enforces did:ebsi:<...> subject DIDs
     // OPTIONAL. Determines whether to validate the Verifiable Credential payload or not.
     // Validation is active by default.
     // NOTE: even when skipValidation is set to true, the payload must be a valid EBSI Verifiable Attestation.
@@ -58,22 +77,12 @@ export async function createPresentation(jwk, kid, signerDid, holderDid, audienc
       alg: resolveAlgorithm(jwk),
       signer: ES256KSigner(base64ToBytes(jwk["d"])),
   };
-  return createVerifiablePresentationJwt(vpPayload, signer, audienceDid, options);
+  return createVerifiablePresentationJwt(vpPayload, signer, audienceDid, config, options);
 }
 
 
 export async function verifyPresentation(token, audienceDid) {
   const options = {
-    network: "pilot", // REQUIRED. EBSI Network ("production", "preprod", "conformance", "pilot" or "test")
-    hosts: ["api-pilot.ebsi.eu"], // REQUIRED. List of trusted hosts running the EBSI Core Services APIs.
-    // OPTIONAL. List of trusted services with their respective version number (e.g. "v5").
-    // Only declare this if you need to override the default versions.
-    // services: {
-    //   "did-registry": "v5",
-    //   "trusted-issuers-registry": "v5",
-    //   "trusted-policies-registry": "v3",
-    //   "trusted-schemas-registry": "v3",
-    // },
     // OPTIONAL. Timeout after which the requests made by the library will fail. Default: 15 seconds
     // timeout: 15_000,
     // OPTIONAL. Determines whether the JSON to JWT transformation will remove the original fields from the input payload.
@@ -114,9 +123,9 @@ export async function verifyPresentation(token, audienceDid) {
   let isValid = false;
   let vpDocument;
   try {
-    vpDocument = await verifyPresentationJwt(token, audienceDid, options);
+      vpDocument = await verifyPresentationJwt(token, audienceDid, config, options);
   } catch (error) {
-    return { isValid, error };
+      return { isValid, error };
   }
   isValid = true;
   return { isValid, vpDocument };

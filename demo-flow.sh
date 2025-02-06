@@ -38,19 +38,19 @@ python3 api-client.py issue vc \
     --claims "placeOfBirth=Khartoum" \
     --out demo-vc-2.jwt
 
-# # Create verifiable presentation containing the above credentials
-# python3 api-client.py issue vp \
-#     --key demo-signer.jwk  \
-#     --kid demo-bar \
-#     --signer $(cat .storage/demo-signer.did) \
-#     --holder $(cat .storage/demo-holder.did) \
-#     --audience $(cat .storage/demo-audience.did) \
-#     --credentials demo-vc-1.jwt demo-vc-2.jwt \
-#     --out demo-vp.jwt
+# Create verifiable presentation containing the above credentials
+python3 api-client.py issue vp \
+    --key demo-signer.jwk  \
+    --kid demo-bar \
+    --signer $(cat .storage/demo-signer.did) \
+    --holder $(cat .storage/demo-holder.did) \
+    --audience $(cat .storage/demo-audience.did) \
+    --credentials demo-vc-1.jwt demo-vc-2.jwt \
+    --out demo-vp.jwt
 
 # TODO: Integrate these actions to demo flow when possible
 python3 api-client.py resolve $(cat .storage/onboarded-sample.did)
 python3 api-client.py verify vc vc-sample.jwt --out vc-sample.json
-# python3 api-client.py verify vp vp-sample.jwt \
-#     --audience "did:ebsi:zwNAE5xThBpmGJUWAY23kgx" \
-#     --out vp-sample.json
+python3 api-client.py verify vp vp-sample.jwt \
+    --audience "did:ebsi:zwNAE5xThBpmGJUWAY23kgx" \
+    --out vp-sample.json    # TODO: Fix

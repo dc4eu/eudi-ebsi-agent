@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# The secret keys .vauly/grnet-*.jwk corresponding to the below used DIDs are
+# The secret keys .vault/grnet-*.jwk corresponding to the below used DIDs are
 # privately owned by GRNET; contact someone in order to be able to run this
 # demo locally.
 

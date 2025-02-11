@@ -8,10 +8,3 @@
 
 # Some claims in JSON format
 !claims-sample.json
-
-# These DIDs are registered (`onboarded`) to the EBSI ledger and can be properly resolved.
-# The respective private keys are held by GRNET. The grent-issuer.did is futher
-# registered as a Trusted Issuer (TI)
-!grnet-issuer.did
-!grnet-holder.did
-!grnet-audience.did

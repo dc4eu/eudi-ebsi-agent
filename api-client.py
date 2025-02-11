@@ -18,12 +18,18 @@ VAULT   =  ".vault"     # Key storage
 SERVICE_ADDRESS = None
 cli_args = None
 
+def print_ok(message):
+    print("\033[92m" +  f"[+] {message}" + "\033[0m")
+
+def print_fail(message):
+    print("\033[91m" +  f"[-] {message}" + "\033[0m")
 
 def create_url(address, endpoint, prefix=""):
     return urljoin(address, urljoin(prefix + "/", endpoint.lstrip("/")))
 
 def flush_json(payload, indent=4, nojump=False):
-    print(json.dumps(payload, indent=indent))
+    if not cli_args.quiet:
+        print(json.dumps(payload, indent=indent))
 
 def load_public_jwk(key_path):
     with open(key_path, "r") as f:
@@ -83,12 +89,15 @@ def main_create():
             })
             data = resp.json()
             flush_json(data)
-            if cli_args.outfile and resp.status_code == 200:
+            if resp.status_code != 200:
+                print_fail("Could not generate key")
+                sys.exit(1)
+            if cli_args.outfile:
                 key_path = os.path.join(VAULT, cli_args.outfile)
                 with open(key_path, "w") as f:
                     jwk = data["jwk"]
                     json.dump(jwk, f, indent=4)
-                print(f"[+] Key saved at {key_path}")
+                print_ok(f"Key saved at {key_path}")
         case "did":
             method = cli_args.method
             endpoint = "create-did/"
@@ -99,12 +108,15 @@ def main_create():
                                 json=options)
             data = resp.json()
             flush_json(data)
-            if cli_args.outfile and resp.status_code == 200:
+            if resp.status_code != 200:
+                print_fail("Could not create DID")
+                sys.exit(1)
+            if cli_args.outfile:
                 did_path = os.path.join(STORAGE, cli_args.outfile)
                 with open(did_path, "w") as f:
                     did = data["did"]
                     f.write(did)
-                print(f"[+] DID saved at {did_path}")
+                print_ok(f"DID saved at {did_path}")
         case _:
             print("No action specified")
             sys.exit(1)
@@ -144,12 +156,15 @@ def main_issue():
             })
             data = resp.json()
             flush_json(data)
-            if cli_args.outfile and resp.status_code == 200:
+            if resp.status_code != 200:
+                print_fail("Could not issue VC")
+                sys.exit(1)
+            if cli_args.outfile:
                 vc_path = os.path.join(STORAGE, cli_args.outfile)
                 with open(vc_path, "w") as f:
                     token = data["token"]
                     f.write(token)
-                print(f"[+] VC token saved at {vc_path}")
+                print_ok(f"VC token saved at {vc_path}")
         case "vp":
             key_path = os.path.join(VAULT, cli_args.key_file)
             with open(key_path, "r") as f:
@@ -180,12 +195,15 @@ def main_issue():
             })
             data = resp.json()
             flush_json(data)
-            if cli_args.outfile and resp.status_code == 200:
+            if resp.status_code != 200:
+                print_fail("Could not issue VP")
+                sys.exit(1)
+            if cli_args.outfile:
                 vp_path = os.path.join(STORAGE, cli_args.outfile)
                 with open(vp_path, "w") as f:
                     token = data["token"]
                     f.write(token)
-                print(f"[+] VP token saved at {vp_path}")
+                print_ok(f"VP token saved at {vp_path}")
         case _:
             print("No action specified")
             sys.exit(1)
@@ -205,12 +223,15 @@ def main_verify():
             })
             data = resp.json()
             flush_json(data)
-            if cli_args.outfile and resp.status_code == 200:
+            if resp.status_code != 200:
+                print_fail("Could not verify VC token")
+                sys.exit(1)
+            if cli_args.outfile:
                 vc_path = os.path.join(STORAGE, cli_args.outfile)
                 with open(vc_path, "w") as f:
                     vc_doc = data["vcDocument"]
                     json.dump(vc_doc, f, indent=4)
-                print(f"[+] VC document saved at {vc_path}")
+                print_ok(f"VC document saved at {vc_path}")
         case "vp":
             vp_path = os.path.join(STORAGE, cli_args.vp_file)
             with open(vp_path, "r") as f:
@@ -224,12 +245,15 @@ def main_verify():
             })
             data = resp.json()
             flush_json(data)
-            if cli_args.outfile and resp.status_code == 200:
+            if resp.status_code != 200:
+                print_fail("Could not verify VP token")
+                sys.exit(1)
+            if cli_args.outfile:
                 vp_path = os.path.join(STORAGE, cli_args.outfile)
                 with open(vp_path, "w") as f:
                     vp_doc = data["vpDocument"]
                     json.dump(vp_doc, f, indent=4)
-                print(f"[+] VP token saved at {vp_path}")
+                print_ok(f"VP document saved at {vp_path}")
         case _:
             print("No action specified")
             sys.exit(1)

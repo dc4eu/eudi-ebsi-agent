@@ -1,7 +1,10 @@
-# Ignore everything in this directory except this file and sample onboarded did
+# Ignore everything in this directory except for the mentioned files
 *
 !.gitignore
-!onboarded-sample.did
+
+# Verifiable VC and VP token tokens from EBSI online sources ()
 !vc-sample.jwt
 !vp-sample.jwt
+
+# Some claims in JSON format
 !claims-sample.json

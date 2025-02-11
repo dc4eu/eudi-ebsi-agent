@@ -226,7 +226,7 @@ describe("VC issuance - success", () => {
 
     // Check header content
     expect(header.alg).toEqual("ES256K");
-    expect(header.kid).toEqual(kid);
+    expect(header.kid).toEqual(`${issuerDid}#${kid}`);
 
     // Check vc content
     const { vc } = payload;

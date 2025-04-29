@@ -24,8 +24,17 @@ def print_ok(message):
 def print_fail(message):
     print("\033[91m" +  f"[-] {message}" + "\033[0m")
 
-def create_url(address, endpoint, prefix=""):
-    return urljoin(address, urljoin(prefix + "/", endpoint.lstrip("/")))
+def create_address(cli_args):
+    address = f"{cli_args.protocol}://{cli_args.host}"
+    if cli_args.host == "localhost":
+        address += f":{cli_args.port}"
+    else:
+        if not address.endswith("/"):
+            address += "/"
+    return address
+
+def create_url(address, endpoint):
+    return urljoin(address, endpoint.lstrip("/"))
 
 def flush_json(payload, indent=4, nojump=False):
     if not cli_args.quiet:
@@ -271,6 +280,9 @@ def main():
                         epilog=epilog)
 
     # Options
+    parser.add_argument("--protocol", type=str, default="http",
+                        choices=["http", "https"],
+                        help="Transfer protocol")
     parser.add_argument("--host", type=str, default="localhost",
                         help="Service host")
     parser.add_argument("--port", type=int, default=3000,
@@ -404,9 +416,10 @@ def main():
                         dest="outfile",
                         help="Save retrieved VP inside .storage")
 
+
     global SERVICE_ADDRESS, cli_args
     cli_args = parser.parse_args()
-    SERVICE_ADDRESS = f"http://{cli_args.host}:{cli_args.port}"
+    SERVICE_ADDRESS = create_address(cli_args)
 
     match cli_args.command:
         case "fetch":

@@ -19,7 +19,7 @@ GET /info
 ### Key creation
 
 ```
-GET /create-key
+POST /create-key
 
 {
     "alg": "rsa" | "secp256k1"
@@ -37,7 +37,7 @@ GET /create-key
 ### DID creation
 
 ```
-GET /create-did
+POST /create-did
 
 {
     "method": "key" | "ebsi",
@@ -56,7 +56,7 @@ GET /create-did
 ### DID resolution
 
 ```
-GET /resolve-did
+POST /resolve-did
 
 {
     "did": ...
@@ -76,7 +76,7 @@ GET /resolve-did
 ### VC issuance
 
 ```
-GET /issue-vc
+POST /issue-vc
 
 {
     "issuer": {
@@ -105,7 +105,7 @@ GET /issue-vc
 ### VC verification
 
 ```
-GET /verify-vc
+POST /verify-vc
 
 {
     "token": ...
@@ -136,7 +136,7 @@ GET /verify-vc
 ### VP issuance
 
 ```
-GET /issue-vp
+POST /issue-vp
 
 {
     "signer": {
@@ -168,7 +168,7 @@ GET /issue-vp
 ### VP verification
 
 ```
-GET /verify-vp
+POST /verify-vp
 
 {
     "token": ...

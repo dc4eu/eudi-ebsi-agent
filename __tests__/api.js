@@ -31,7 +31,7 @@ describe("JWK creation - success", () => {
   it.each(["rsa", "secp256k1"])(
   "GET /create-key: 200 - create JWK - over: %s", async (alg) => {
     const res = await client
-      .get("/create-key")
+      .post("/create-key")
       .send({
         alg
       });
@@ -46,7 +46,7 @@ describe("JWK creation - success", () => {
 describe("JWK creation - errors", () => {
   it("GET /create-key: 400 - No algorithm provided", async () => {
     const res = await client
-      .get("/create-key")
+      .post("/create-key")
         .send({
         });
     expect(res.status).toEqual(400);
@@ -56,7 +56,7 @@ describe("JWK creation - errors", () => {
   });
   it("GET /create-key: 400 - Unsupported algorithm", async () => {
     const res = await client
-      .get("/create-key")
+      .post("/create-key")
         .send({
           alg: "foo",
         });
@@ -78,7 +78,7 @@ describe("DID creation - success", () => {
   it.each(["key", "ebsi"])(
     "GET /create-did: 200 - create DID - method: %s", async (method) => {
       const res = await client
-        .get("/create-did")
+        .post("/create-did")
         .send({
           publicJwk, method
         });
@@ -97,7 +97,7 @@ describe("DID creation - errors", () => {
   }
   it("GET /create-did: 400 - No method provided", async () => {
     const res = await client
-      .get("/create-did")
+      .post("/create-did")
         .send({
           publicJwk
         });
@@ -108,7 +108,7 @@ describe("DID creation - errors", () => {
   });
   it("GET /create-did: 400 - Unsupported method", async () => {
     const res = await client
-      .get("/create-did")
+      .post("/create-did")
         .send({
           "method": "foo",
           publicJwk,
@@ -120,7 +120,7 @@ describe("DID creation - errors", () => {
   });
   it("GET /create-did: 400 - No JWK provided", async () => {
     const res = await client
-      .get("/create-did")
+      .post("/create-did")
         .send({
           "method": "ebsi",
         });
@@ -136,7 +136,7 @@ describe("DID resolution - success", () => {
   it("GET /resolve-did: 200 - Resolve onboarded DID", async () => {
     const did  = "did:ebsi:ziDnioxYYLW1a3qUbqTFz4W";
     const res = await client
-      .get("/resolve-did")
+      .post("/resolve-did")
       .set("Content-Type", "application/json")
       .send({
         did
@@ -150,7 +150,7 @@ describe("DID resolution - success", () => {
 
 describe("DID resolution - errors", () => {
   it("GET /resolve-did: 400 - No DID provided", async () => {
-    const res = await client.get("/resolve-did");
+    const res = await client.post("/resolve-did");
     expect(res.status).toEqual(400);
     expect(res.headers["content-type"]).toMatch("application\/json");
     expect(res.body).toEqual({
@@ -159,7 +159,7 @@ describe("DID resolution - errors", () => {
   });
   it("GET /resolve-did: 400 - Invalid DID", async () => {
     const res = await client
-      .get("/resolve-did")
+      .post("/resolve-did")
       .set("Content-Type", "application/json")
       .send({
         did: "did:ebsi:666"
@@ -172,7 +172,7 @@ describe("DID resolution - errors", () => {
   });
   it("GET /resolve-did: 400 - DID not found", async () => {
     const res = await client
-      .get("/resolve-did")
+      .post("/resolve-did")
       .set("Content-Type", "application/json")
       .send({
         did: "did:ebsi:zvHWX359A3CvfJnCYaAiAde"
@@ -204,7 +204,7 @@ describe("VC issuance - success", () => {
       ageOver18: true,
     };
     const res = await client
-      .get("/issue-vc")
+      .post("/issue-vc")
       .set("Content-Type", "application/json")
       .send({
         issuer: {
@@ -256,7 +256,7 @@ describe("VC issuance - errors", () => {
     const jwk = require("./fixtures/jwk-2.json"); // secp256k1
     const claims = { a: 0, b: 1 };
     const res = await client
-      .get("/issue-vc")
+      .post("/issue-vc")
       .set("Content-Type", "application/json")
       .send({
         issuer: {
@@ -281,7 +281,7 @@ describe("VC issuance - errors", () => {
     const jwk = require("./fixtures/jwk-2.json"); // secp256k1
     const claims = { a: 0, b: 1 };
     const res = await client
-      .get("/issue-vc")
+      .post("/issue-vc")
       .set("Content-Type", "application/json")
       .send({
         issuer: {
@@ -306,7 +306,7 @@ describe("VC issuance - errors", () => {
     const jwk = require("./fixtures/jwk-2.json"); // secp256k1
     const claims = { a: 0, b: 1 };
     const res = await client
-      .get("/issue-vc")
+      .post("/issue-vc")
       .set("Content-Type", "application/json")
       .send({
         issuer: {
@@ -331,7 +331,7 @@ describe("VC issuance - errors", () => {
     const jwk = require("./fixtures/jwk-2.json"); // secp256k1
     const claims = { a: 0, b: 1 };
     const res = await client
-      .get("/issue-vc")
+      .post("/issue-vc")
       .set("Content-Type", "application/json")
       .send({
         issuer: {
@@ -356,7 +356,7 @@ describe("VC issuance - errors", () => {
     const jwk = require("./fixtures/jwk-2.json"); // secp256k1
     const claims = { a: 0, b: 1 };
     const res = await client
-      .get("/issue-vc")
+      .post("/issue-vc")
       .set("Content-Type", "application/json")
       .send({
         issuer: {
@@ -380,7 +380,7 @@ describe("VC issuance - errors", () => {
     const subjectDid = "did:ebsi:z25a23eWUxQQzmAgnD9srpMM";
     const jwk = require("./fixtures/jwk-1.json"); // secp256k1
     const res = await client
-      .get("/issue-vc")
+      .post("/issue-vc")
       .set("Content-Type", "application/json")
       .send({
         issuer: {
@@ -407,7 +407,7 @@ describe("VC verification - success", () => {
   ])("GET /verify-vc: 200 - verify VC: %s", async (vc_file) => {
     const token = loadToken(vc_file);
     const res = await client
-      .get("/verify-vc")
+      .post("/verify-vc")
       .set("Content-Type", "application/json")
       .send({
         token
@@ -421,7 +421,7 @@ describe("VC verification - success", () => {
 describe("VC verification - errors", () => {
   it("GET /verify-vc: 400 - Missing VC token", async () => {
     const res = await client
-      .get("/verify-vc")
+      .post("/verify-vc")
       .set("Content-Type", "application/json")
       .send({
       });
@@ -434,7 +434,7 @@ describe("VC verification - errors", () => {
     let token = loadToken("fixtures/vc-1.jwt");
     token += "?";   // Tamper signature
     const res = await client
-      .get("/verify-vc")
+      .post("/verify-vc")
       .set("Content-Type", "application/json")
       .send({
         token
@@ -460,7 +460,7 @@ describe("VP issuance - success", () => {
     const vc_2 = loadToken("fixtures/vc-2.jwt")
     const jwk = require("./fixtures/jwk-2.json"); // secp256k1
     const res = await client
-      .get("/issue-vp")
+      .post("/issue-vp")
       .set("Content-Type", "application/json")
       .send({
         signer: {
@@ -513,7 +513,7 @@ describe("VP issuance - errors", () => {
     const vc_2 = loadToken("fixtures/vc-2.jwt")
     const jwk = require("./fixtures/jwk-2.json"); // secp256k1
     const res = await client
-      .get("/issue-vp")
+      .post("/issue-vp")
       .set("Content-Type", "application/json")
       .send({
         signer: {
@@ -546,7 +546,7 @@ describe("VP issuance - errors", () => {
     const vc_2 = loadToken("fixtures/vc-2.jwt")
     const jwk = require("./fixtures/jwk-2.json"); // secp256k1
     const res = await client
-      .get("/issue-vp")
+      .post("/issue-vp")
       .set("Content-Type", "application/json")
       .send({
         signer: {
@@ -579,7 +579,7 @@ describe("VP issuance - errors", () => {
     const vc_2 = loadToken("fixtures/vc-2.jwt")
     const jwk = require("./fixtures/jwk-2.json"); // secp256k1
     const res = await client
-      .get("/issue-vp")
+      .post("/issue-vp")
       .set("Content-Type", "application/json")
       .send({
         signer: {
@@ -612,7 +612,7 @@ describe("VP issuance - errors", () => {
     const vc_2 = loadToken("fixtures/vc-2.jwt")
     const jwk = require("./fixtures/jwk-2.json"); // secp256k1
     const res = await client
-      .get("/issue-vp")
+      .post("/issue-vp")
       .set("Content-Type", "application/json")
       .send({
         signer: {
@@ -645,7 +645,7 @@ describe("VP issuance - errors", () => {
     const vc_2 = loadToken("fixtures/vc-2.jwt")
     const jwk = require("./fixtures/jwk-2.json"); // secp256k1
     const res = await client
-      .get("/issue-vp")
+      .post("/issue-vp")
       .set("Content-Type", "application/json")
       .send({
         signer: {
@@ -678,7 +678,7 @@ describe("VP issuance - errors", () => {
     const vc_2 = loadToken("fixtures/vc-2.jwt")
     const jwk = require("./fixtures/jwk-2.json"); // secp256k1
     const res = await client
-      .get("/issue-vp")
+      .post("/issue-vp")
       .set("Content-Type", "application/json")
       .send({
         signer: {
@@ -711,7 +711,7 @@ describe("VP issuance - errors", () => {
     const vc_2 = loadToken("fixtures/vc-2.jwt")
     const jwk = require("./fixtures/jwk-1.json"); // rsa
     const res = await client
-      .get("/issue-vp")
+      .post("/issue-vp")
       .set("Content-Type", "application/json")
       .send({
         signer: {
@@ -744,7 +744,7 @@ describe("VP verification - success", () => {
     const audienceDid = "did:ebsi:zwNAE5xThBpmGJUWAY23kgx";
     const token = loadToken(vp_file);
     const res = await client
-      .get("/verify-vp")
+      .post("/verify-vp")
       .set("Content-Type", "application/json")
       .send({
         token,
@@ -761,7 +761,7 @@ describe("VP verification - success", () => {
 describe("VP verification - errors", () => {
   it("GET /verify-vp: 400 - Missing VP token", async () => {
     const res = await client
-      .get("/verify-vp")
+      .post("/verify-vp")
       .set("Content-Type", "application/json")
       .send({
         audience: {
@@ -775,7 +775,7 @@ describe("VP verification - errors", () => {
   });
   it("GET /verify-vp: 400 - Missing audience", async () => {
     const res = await client
-      .get("/verify-vp")
+      .post("/verify-vp")
       .set("Content-Type", "application/json")
       .send({
         token: "whatever"
@@ -790,7 +790,7 @@ describe("VP verification - errors", () => {
     let token = loadToken("./fixtures/vp.jwt");
     token += "?";   // Tamper signature
     const res = await client
-      .get("/verify-vp")
+      .post("/verify-vp")
       .set("Content-Type", "application/json")
       .send({
         token,

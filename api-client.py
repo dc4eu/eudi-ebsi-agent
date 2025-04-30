@@ -80,7 +80,7 @@ def main_fetch():
 def main_resolve():
     did = cli_args.did
     endpoint = "resolve-did/"
-    resp = requests.get(create_url(SERVICE_ADDRESS, endpoint), json={
+    resp = requests.post(create_url(SERVICE_ADDRESS, endpoint), json={
         "did": did
     })
     data = resp.json()
@@ -93,7 +93,7 @@ def main_create():
     match subcommand:
         case "key":
             endpoint = "create-key/"
-            resp = requests.get(create_url(SERVICE_ADDRESS, endpoint), json={
+            resp = requests.post(create_url(SERVICE_ADDRESS, endpoint), json={
                 "alg": cli_args.alg,
             })
             data = resp.json()
@@ -113,7 +113,7 @@ def main_create():
             options = {"method": method}
             key_path = os.path.join(VAULT, cli_args.key_file)
             options["publicJwk"] = load_public_jwk(key_path)
-            resp = requests.get(create_url(SERVICE_ADDRESS, endpoint),
+            resp = requests.post(create_url(SERVICE_ADDRESS, endpoint),
                                 json=options)
             data = resp.json()
             flush_json(data)
@@ -152,7 +152,7 @@ def main_issue():
                     claims[key] = value
 
             endpoint = "issue-vc/"
-            resp = requests.get(create_url(SERVICE_ADDRESS, endpoint), json={
+            resp = requests.post(create_url(SERVICE_ADDRESS, endpoint), json={
                 "issuer": {
                     "did": cli_args.issuer,
                     "jwk": jwk,
@@ -188,7 +188,7 @@ def main_issue():
                 vc_tokens += [vc_token]
 
             endpoint = "issue-vp/"
-            resp = requests.get(create_url(SERVICE_ADDRESS, endpoint), json={
+            resp = requests.post(create_url(SERVICE_ADDRESS, endpoint), json={
                 "signer": {
                     "did": cli_args.signer,
                     "jwk": jwk,
@@ -227,7 +227,7 @@ def main_verify():
             with open(vc_path, "r") as f:
                 token = f.read().rstrip()
             endpoint = "verify-vc/"
-            resp = requests.get(create_url(SERVICE_ADDRESS, endpoint), json={
+            resp = requests.post(create_url(SERVICE_ADDRESS, endpoint), json={
                 "token": token
             })
             data = resp.json()
@@ -246,7 +246,7 @@ def main_verify():
             with open(vp_path, "r") as f:
                 token = f.read().rstrip()
             endpoint = "verify-vp/"
-            resp = requests.get(create_url(SERVICE_ADDRESS, endpoint), json={
+            resp = requests.post(create_url(SERVICE_ADDRESS, endpoint), json={
                 "token": token,
                 "audience": {
                     "did": cli_args.audience

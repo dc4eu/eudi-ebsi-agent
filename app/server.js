@@ -26,7 +26,7 @@ app.get("/info", async (req, res) => {
 });
 
 
-app.get("/create-key", async (req, res) => {
+app.post("/create-key", async (req, res) => {
   const { alg } = req.body;
   if (!alg) {
     return res.status(400).json({ error: "Bad request: No algorithm provided" });
@@ -44,7 +44,7 @@ app.get("/create-key", async (req, res) => {
 
 
 
-app.get("/create-did", async (req, res) => {
+app.post("/create-did", async (req, res) => {
   const { method, publicJwk } = req.body;
 
   if (!method) {
@@ -65,7 +65,7 @@ app.get("/create-did", async (req, res) => {
 });
 
 
-app.get("/resolve-did", async (req, res) => {
+app.post("/resolve-did", async (req, res) => {
   const { did } = req.body;
   if (!did) {
     return res.status(400).json({ error: "Bad request: No did provided" });
@@ -94,7 +94,7 @@ app.get("/resolve-did", async (req, res) => {
 });
 
 
-app.get("/issue-vc", async (req, res) => {
+app.post("/issue-vc", async (req, res) => {
   const { issuer, subject, claims } = req.body;
   if (!issuer || !issuer.did) {
     return res.status(400).json({ error: "Bad request: No issuer provided" });
@@ -127,7 +127,7 @@ app.get("/issue-vc", async (req, res) => {
 });
 
 
-app.get("/verify-vc", async (req, res) => {
+app.post("/verify-vc", async (req, res) => {
   const { token } = req.body;
   if (!token) {
     return res.status(400).json({ error: "Bad request: No VC token provided" });
@@ -146,7 +146,7 @@ app.get("/verify-vc", async (req, res) => {
 });
 
 
-app.get("/issue-vp", async (req, res) => {
+app.post("/issue-vp", async (req, res) => {
   const { signer, holder, audience, credentials } = req.body;
   if (!signer || !signer.did) {
     return res.status(400).json({ error: "Bad request: No signer provided" });
@@ -183,7 +183,7 @@ app.get("/issue-vp", async (req, res) => {
 });
 
 
-app.get("/verify-vp", async (req, res) => {
+app.post("/verify-vp", async (req, res) => {
   const { token, audience } = req.body;
   if (!token) {
     return res.status(400).json({ error: "Bad request: No VP token provided" });
